@@ -1,0 +1,85 @@
+[tool.poetry]
+name = "pyarx"
+version = "0.1.0"  # semantic-release
+description = "OSL Python Package contains all the boilerplate you need to create a Python package."
+authors = ["Roronoa Zoro <ivan.ogasawara@gmail.com>"]
+license = "Apache Software License 2.0"
+include = [
+  "*.cfg",
+  "*.ini",
+  "*.js",
+  "*.json",
+  "*.lock",
+  "*.md",
+  "*.py",
+  "*.sh",
+  "*.rst",
+  "*.txt",
+  "*.toml",
+  "*.yml",
+  "*.yaml",
+  ".github",
+  "conda",
+  "docker",
+  "docs",
+  ".dockerignore",
+  ".env.tpl",
+  ".makim.yaml",
+  ".containers-sugar.yaml",
+  ".gitignore",
+  "Makefile",
+]
+exclude = [
+  ".git/*",
+  ".env*",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+
+[tool.poetry.dev-dependencies]
+urllib3 = "<2"  # fix poetry issues
+pytest = "^7"
+pytest-cov = "^4"
+coverage = "^7"
+black = "^22.3"
+isort = "^5"
+pre-commit = "^2"
+flake8 = "^4"
+mypy = "^0.931"
+bandit = "^1.7.5"
+pydocstyle = "^6.3.0"
+vulture = "^2.7"
+mccabe = "^0.6.1"
+Jinja2 = "<3.1.0"
+mkdocs = ">=1.2.3,<2"
+mkdocs-exclude = ">=1.0.2,<2"
+mkdocs-jupyter = ">=0.20.0,<1"
+mkdocs-literate-nav = ">=0.4.1,<1"
+mkdocs-macros-plugin = ">=0.6.3,<1"
+mkdocs-material = ">=8.2.1,<9"
+mkdocstrings = ">=0.17.0,<0.18.0"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
+[tool.black]
+line-length = 79
+target-version = ["py38"]
+force-exclude = """
+(
+  /(
+      docs/*
+    |.*\\.egg-info
+  )/
+)
+"""
+
+[tool.isort]
+ensure_newline_before_comments = true
+line_length = 79
+multi_line_output = 3
+include_trailing_comma = true
+skip_glob = ["docs/*", "*.egg-info"]

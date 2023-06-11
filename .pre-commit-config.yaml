@@ -1,0 +1,123 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: end-of-file-fixer
+
+  - repo: local
+    hooks:
+    - entry: black
+      id: black
+      name: black
+      exclude: |
+        (?x)(
+          docs
+        )
+      files: ""
+      language: system
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
+        - file
+        - python
+
+    - entry: flake8
+      exclude: ^$
+      files: ""
+      id: flake8
+      language: python
+      name: flake8
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
+
+    - entry: isort
+      exclude: "^.*/js/.*$"
+      files: ""
+      id: isort
+      language: python
+      name: isort
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
+
+    - entry: mypy
+      exclude: ^$
+      # note: it would be good to extend this to other apps as well
+      files: "pyarx/"
+      id: mypy
+      language: python
+      name: mypy
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
+
+    - entry: shellcheck
+      id: shellcheck
+      language: system
+      name: shellcheck
+      files: .sh$
+      types:
+          - shell
+      types_or:
+          - file
+          - sh
+          - ash
+          - bash
+          - bats
+          - dash
+          - ksh
+
+    - entry: bandit
+      id: bandit
+      language: python
+      name: bandit
+      args: ['-iii', '-ll', .bandit]
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
+
+    - entry: pydocstyle
+      exclude: ^$
+      files: "pyarx/"
+      id: pydocstyle
+      language: python
+      name: pydocstyle
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
+
+    - entry: vulture
+      files: "pyarx/"
+      id: vulture
+      language: python
+      name: vulture
+      description: Find unused Python code.
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
+
+    - id: mccabe
+      name: mccabe
+      entry: flake8 --max-complexity 10
+      language: python
+      files: "pyarx/"
+      pass_filenames: true
+      stages:
+        - commit
+      types:
+        - python
