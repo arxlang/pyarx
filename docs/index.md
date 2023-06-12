@@ -1,11 +1,11 @@
 ![LOGO](/images/logo.png)
 
-# PyArx
+# Arx
 
 OSL Python Package contains all the boilerplate you need to create a Python package.
 
 * License: Apache Software License 2.0
-* Documentation: https://pyarx.github.io
+* Documentation: https://arx.github.io
 
 ## Features
 

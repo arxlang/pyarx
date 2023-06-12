@@ -11,7 +11,7 @@ RELEASE_APP=npx --yes \
 	-p "@google/semantic-release-replace-plugin" \
 	semantic-release
 
-PACKAGE_PATH="src/pyarx"
+PACKAGE_PATH="src/arx"
 
 
 define PRINT_HELP_PYSCRIPT

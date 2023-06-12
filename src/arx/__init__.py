@@ -1,5 +1,5 @@
 # type: ignore[attr-defined]
-"""PyArx."""
+"""Arx is a compiler create with llvm."""
 from importlib import metadata as importlib_metadata
 
 
@@ -13,6 +13,6 @@ def get_version() -> str:
 
 version: str = get_version()
 
-__author__ = "Roronoa Zoro"
+__author__ = "Ivan Ogasawara"
 __email__ = "ivan.ogasawara@gmail.com"
 __version__: str = version

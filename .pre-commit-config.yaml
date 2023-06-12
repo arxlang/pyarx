@@ -50,7 +50,7 @@ repos:
     - entry: mypy
       exclude: ^$
       # note: it would be good to extend this to other apps as well
-      files: "pyarx/"
+      files: "src/arx/"
       id: mypy
       language: python
       name: mypy
@@ -89,7 +89,7 @@ repos:
 
     - entry: pydocstyle
       exclude: ^$
-      files: "pyarx/"
+      files: "src/arx/"
       id: pydocstyle
       language: python
       name: pydocstyle
@@ -100,7 +100,7 @@ repos:
         - python
 
     - entry: vulture
-      files: "pyarx/"
+      files: "src/arx/"
       id: vulture
       language: python
       name: vulture
@@ -115,7 +115,7 @@ repos:
       name: mccabe
       entry: flake8 --max-complexity 10
       language: python
-      files: "pyarx/"
+      files: "arx/"
       pass_filenames: true
       stages:
         - commit

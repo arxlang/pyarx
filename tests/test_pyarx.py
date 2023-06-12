@@ -1,4 +1,4 @@
-"""Tests for `pyarx` package."""
+"""Tests for `arx` package."""
 
 import pytest
 

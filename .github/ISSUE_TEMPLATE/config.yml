@@ -2,14 +2,14 @@
 blank_issues_enabled: true
 contact_links:
 - name: 🙋  Usage Questions
-  url: https://github.com/pyarx/discussions
+  url: https://github.com/arx/discussions
   about: |
-    Use PyArx's GitHub Discussions to ask "How do I do X with Cookiecutter?".
+    Use Arx's GitHub Discussions to ask "How do I do X with Cookiecutter?".
 - name: 📖  Tutorial
-  url: https://github.com/pyarx
+  url: https://github.com/arx
   about: |
-    The PyArx tutorial is continually updated and provides an in depth walkthrough
+    The Arx tutorial is continually updated and provides an in depth walkthrough
     of how to use the latest release of Cookiecutter.
-- name: 📝  PyArx Code of Conduct
-  url: https://github.com/pyarx/coc/CODE_OF_CONDUCT.md
+- name: 📝  Arx Code of Conduct
+  url: https://github.com/arx/coc/CODE_OF_CONDUCT.md
   about: Expectations for how people will interact with each other on Cookiecutter's GitHub.

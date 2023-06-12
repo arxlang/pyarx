@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "pyarx"
+name = "arx"
 version = "0.1.0"  # semantic-release
-description = "OSL Python Package contains all the boilerplate you need to create a Python package."
-authors = ["Roronoa Zoro <ivan.ogasawara@gmail.com>"]
+description = "Arx is a compiler built with llvm"
+authors = ["Ivan Ogasawara <ivan.ogasawara@gmail.com>"]
 license = "Apache Software License 2.0"
 include = [
   "*.cfg",
@@ -25,7 +25,6 @@ include = [
   ".dockerignore",
   ".env.tpl",
   ".makim.yaml",
-  ".containers-sugar.yaml",
   ".gitignore",
   "Makefile",
 ]
@@ -34,8 +33,12 @@ exclude = [
   ".env*",
 ]
 
+[tool.poetry.scripts]
+"arx" = "arx.__main__:app"
+
 [tool.poetry.dependencies]
 python = "^3.8.1"
+llvmlite = "^0.40.0"
 
 [tool.poetry.dev-dependencies]
 urllib3 = "<2"  # fix poetry issues
@@ -59,6 +62,9 @@ mkdocs-literate-nav = ">=0.4.1,<1"
 mkdocs-macros-plugin = ">=0.6.3,<1"
 mkdocs-material = ">=8.2.1,<9"
 mkdocstrings = ">=0.17.0,<0.18.0"
+
+[tool.poetry.group.dev.dependencies]
+makim = "1.8.1"
 
 [tool.pytest.ini_options]
 testpaths = [
