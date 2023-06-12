@@ -17,7 +17,7 @@ body:
       already be implemented in a development release.
 
 
-      [issue search]: https://github.com/Arx/issues?q=is%3Aopen+is%3Aissue+label%3Afeat%2Fenhancement
+      [issue search]: arxlang/pyarx/issues?q=is%3Aopen+is%3Aissue+label%3Afeat%2Fenhancement
 
 
 - type: textarea
