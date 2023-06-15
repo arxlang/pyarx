@@ -1,67 +1,96 @@
 import os
 import sys
 import tempfile
-
-INPUT_FROM_STDIN = False
-INPUT_FILE = ""
-EOF = sys.maxunicode + 1
+from io import StringIO
 
 
-def get_char() -> int:
-    """
-    Get a char from the buffer or from the default input.
+class ArxBuffer:
+    buffer: str = ""
+    position: int = 0
 
-    Returns
-    -------
-    int
-        An integer representation of a char from the buffer.
-    """
-    if INPUT_FROM_STDIN:
-        return ord(sys.stdin.read(1))
-    return input_buffer.get()
+    def __init__(self):
+        self.clean()
 
+    def clean(self):
+        self.position = 0
+        self.buffer = ""
 
-def file_to_buffer(filename: str) -> None:
-    """
-    Copy the file content to the buffer.
+    def write(self, text: str):
+        self.buffer += text
+        self.position = 0
 
-    Parameters
-    ----------
-    filename : str
-        The name of the file to be copied to the buffer.
-    """
-    with open(filename, "r") as arxfile:
-        input_buffer.clear()
-        for line in arxfile:
-            input_buffer.write(line + "\n")
+    def read(self):
+        try:
+            i = self.position
+            self.position += 1
+            return self.buffer[i]
+        except IndexError:
+            return ""
 
 
-def string_to_buffer(value: str) -> None:
-    """
-    Copy the given string to the buffer.
+class ArxIO:
+    """Arx class for Input and Output operations."""
 
-    Parameters
-    ----------
-    value : str
-        The string to be copied to the buffer.
-    """
-    input_buffer.clear()
-    input_buffer.str("")
-    input_buffer.write(value + "\n" + chr(EOF))
+    INPUT_FROM_STDIN = False
+    INPUT_FILE = ""
+    EOF = sys.maxunicode + 1
+    buffer: ArxBuffer = ArxBuffer()
 
+    @classmethod
+    def get_char(cls) -> int:
+        """
+        Get a char from the buffer or from the default input.
 
-def load_input_to_buffer() -> None:
-    """
-    Load the content file or the standard input to the buffer.
-    """
-    if INPUT_FILE != "":
-        input_file_path = os.path.abspath(INPUT_FILE)
-        file_to_buffer(input_file_path)
-    else:
-        file_content = sys.stdin.read().strip()
+        Returns
+        -------
+        int
+            An integer representation of a char from the buffer.
+        """
+        if cls.INPUT_FROM_STDIN:
+            return ord(sys.stdin.read(1))
+        return cls.buffer.read()
 
-        if file_content != "":
-            string_to_buffer(file_content)
+    @classmethod
+    def file_to_buffer(cls, filename: str):
+        """
+        Copy the file content to the buffer.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to be copied to the buffer.
+        """
+        with open(filename, "r") as arxfile:
+            cls.buffer.clear()
+            for line in arxfile:
+                cls.buffer.write(line + "\n")
+
+    @classmethod
+    def string_to_buffer(cls, value: str):
+        """
+        Copy the given string to the buffer.
+
+        Parameters
+        ----------
+        value : str
+            The string to be copied to the buffer.
+        """
+        cls.buffer.clean()
+        cls.buffer.write(value)
+
+    @classmethod
+    def load_input_to_buffer(cls):
+        """
+        Load the content file or the standard input to the buffer.
+        """
+        if cls.INPUT_FILE != "":
+            input_file_path = os.path.abspath(cls.INPUT_FILE)
+            cls.file_to_buffer(input_file_path)
+        else:
+            file_content = sys.stdin.read().strip()
+
+            if file_content != "":
+                cls.string_to_buffer(file_content)
 
 
 class ArxFile:

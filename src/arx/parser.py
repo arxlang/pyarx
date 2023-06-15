@@ -5,23 +5,39 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from llvmlite import ir
 
-from arx.ast import *
-from arx.lexer import Lexer, SourceLocation
+from arx.ast import (
+    BinaryExprAST,
+    CallExprAST,
+    ExprAST,
+    FloatExprAST,
+    ForExprAST,
+    FunctionAST,
+    IfExprAST,
+    PrototypeAST,
+    ReturnExprAST,
+    TreeAST,
+    UnaryExprAST,
+    VarExprAST,
+    VariableExprAST,
+    Visitor,
+)
+from arx.lexer import Lexer, SourceLocation, Token
+from arx.logs import LogError
 
 
 class Parser:
     bin_op_precedence: Dict[str, int] = {}
 
-    @staticmethod
-    def setup():
-        Parser.bin_op_precedence["="] = 2
-        Parser.bin_op_precedence["<"] = 10
-        Parser.bin_op_precedence["+"] = 20
-        Parser.bin_op_precedence["-"] = 20
-        Parser.bin_op_precedence["*"] = 40
+    @classmethod
+    def setup(cls):
+        cls.bin_op_precedence["="] = 2
+        cls.bin_op_precedence["<"] = 10
+        cls.bin_op_precedence["+"] = 20
+        cls.bin_op_precedence["-"] = 20
+        cls.bin_op_precedence["*"] = 40
 
-    @staticmethod
-    def parse() -> Optional[TreeAST]:
+    @classmethod
+    def parse(cls) -> Optional[TreeAST]:
         """
         Parse the input code.
 
@@ -33,24 +49,24 @@ class Parser:
         ast: TreeAST = TreeAST()
 
         while True:
-            if Lexer.cur_tok == tok_eof:
+            if Lexer.cur_tok == Token.tok_eof:
                 return ast
-            elif Lexer.cur_tok == tok_not_initialized:
+            elif Lexer.cur_tok == Token.tok_not_initialized:
                 Lexer.get_next_token()
             elif Lexer.cur_tok == ";":
                 Lexer.get_next_token()
                 # ignore top-level semicolons.
-            elif Lexer.cur_tok == tok_function:
+            elif Lexer.cur_tok == Token.tok_function:
                 ast.nodes.append(parse_definition())
-            elif Lexer.cur_tok == tok_extern:
+            elif Lexer.cur_tok == Token.tok_extern:
                 ast.nodes.append(parse_extern())
             else:
                 ast.nodes.append(parse_top_level_expr())
 
         return ast
 
-    @staticmethod
-    def get_tok_precedence() -> int:
+    @classmethod
+    def get_tok_precedence(cls) -> int:
         """
         Get the precedence of the pending binary operator token.
 
@@ -59,17 +75,17 @@ class Parser:
         int
             The token precedence.
         """
-        if not Lexer.cur_tok.isascii():
+        if not isinstance(Lexer.cur_tok, str) or not Lexer.cur_tok.isascii():
             return -1
 
         # Make sure it's a declared binop.
-        tok_prec: int = Parser.bin_op_precedence.get(Lexer.cur_tok, -1)
+        tok_prec: int = cls.bin_op_precedence.get(Lexer.cur_tok, -1)
         if tok_prec <= 0:
             return -1
         return tok_prec
 
-    @staticmethod
-    def parse_definition() -> Optional[FunctionAST]:
+    @classmethod
+    def parse_definition(cls) -> Optional[FunctionAST]:
         """
         Parse the function definition expression.
 
@@ -79,17 +95,17 @@ class Parser:
             The parsed function definition, or None if parsing fails.
         """
         Lexer.get_next_token()  # eat function.
-        proto: Optional[PrototypeAST] = self.parse_prototype()
+        proto: Optional[PrototypeAST] = cls.parse_prototype()
         if not proto:
             return None
 
-        expression: Optional[ExprAST] = self.parse_expression()
+        expression: Optional[ExprAST] = cls.parse_expression()
         if expression:
             return FunctionAST(proto, expression)
         return None
 
-    @staticmethod
-    def parse_extern() -> Optional[PrototypeAST]:
+    @classmethod
+    def parse_extern(cls) -> Optional[PrototypeAST]:
         """
         Parse the extern expression.
 
@@ -99,10 +115,10 @@ class Parser:
             The parsed extern expression as a prototype, or None if parsing fails.
         """
         Lexer.get_next_token()  # eat extern.
-        return parse_extern_prototype()
+        return cls.parse_extern_prototype()
 
-    @staticmethod
-    def parse_top_level_expr() -> Optional[FunctionAST]:
+    @classmethod
+    def parse_top_level_expr(cls) -> Optional[FunctionAST]:
         """
         Parse the top level expression.
 
@@ -112,14 +128,14 @@ class Parser:
             The parsed top level expression as a function, or None if parsing fails.
         """
         fn_loc: SourceLocation = Lexer.cur_loc
-        if expr := self.parse_expression():
+        if expr := cls.parse_expression():
             # Make an anonymous proto.
             proto = PrototypeAST(fn_loc, "__anon_expr", "float", [])
             return FunctionAST(proto, expr)
         return None
 
-    @staticmethod
-    def parse_primary() -> Optional[ExprAST]:
+    @classmethod
+    def parse_primary(cls) -> Optional[ExprAST]:
         """
         Parse the primary expression.
 
@@ -131,33 +147,33 @@ class Parser:
         msg: str = ""
 
         cur_tok = Lexer.cur_tok
-        if cur_tok == tok_identifier:
-            return Parser.parse_identifier_expr()
-        elif cur_tok == tok_float_literal:
-            return parse_float_expr()
+        if cur_tok == Token.tok_identifier:
+            return cls.parse_identifier_expr()
+        elif cur_tok == Token.tok_float_literal:
+            return cls.parse_float_expr()
         elif cur_tok == "(":
-            return Parser.parse_paren_expr()
-        elif cur_tok == tok_if:
-            return parse_if_expr()
-        elif cur_tok == tok_for:
-            return parse_for_expr()
-        elif cur_tok == tok_var:
-            return parse_var_expr()
+            return cls.parse_paren_expr()
+        elif cur_tok == Token.tok_if:
+            return cls.parse_if_expr()
+        elif cur_tok == Token.tok_for:
+            return cls.parse_for_expr()
+        elif cur_tok == Token.tok_var:
+            return cls.parse_var_expr()
         elif cur_tok == ";":
             # ignore top-level semicolons.
             Lexer.get_next_token()  # eat `;`
-            return parse_primary()
-        elif cur_tok == tok_return:
+            return cls.parse_primary()
+        elif cur_tok == Token.tok_return:
             # ignore return for now
             Lexer.get_next_token()  # eat tok_return
-            return parse_primary()
+            return cls.parse_primary()
         else:
             msg = f"Parser: Unknown token when expecting an expression: '{cur_tok}'."
             Lexer.get_next_token()  # eat unknown token
             return LogError(msg)
 
-    @staticmethod
-    def parse_expression() -> Optional[ExprAST]:
+    @classmethod
+    def parse_expression(cls) -> Optional[ExprAST]:
         """
         Parse an expression.
 
@@ -166,14 +182,14 @@ class Parser:
         Optional[ExprAST]
             The parsed expression, or None if parsing fails.
         """
-        lhs: Optional[ExprAST] = self.parse_unary()
+        lhs: Optional[ExprAST] = cls.parse_unary()
         if not lhs:
             return None
 
-        return parse_bin_op_rhs(0, lhs)
+        return cls.parse_bin_op_rhs(0, lhs)
 
-    @staticmethod
-    def parse_if_expr() -> Optional[IfExprAST]:
+    @classmethod
+    def parse_if_expr(cls) -> Optional[IfExprAST]:
         """
         Parse the `if` expression.
 
@@ -188,7 +204,7 @@ class Parser:
         Lexer.get_next_token()  # eat the if.
 
         # condition.
-        cond: Optional[ExprAST] = self.parse_expression()
+        cond: Optional[ExprAST] = cls.parse_expression()
         if not cond:
             return None
 
@@ -202,11 +218,11 @@ class Parser:
 
         Lexer.get_next_token()  # eat the ':'
 
-        then_expr: Optional[ExprAST] = self.parse_expression()
+        then_expr: Optional[ExprAST] = cls.parse_expression()
         if not then_expr:
             return None
 
-        if Lexer.cur_tok != tok_else:
+        if Lexer.cur_tok != Token.tok_else:
             return LogError("Parser: Expected else")
 
         Lexer.get_next_token()  # eat the else token
@@ -221,14 +237,14 @@ class Parser:
 
         Lexer.get_next_token()  # eat the ':'
 
-        else_expr: Optional[ExprAST] = self.parse_expression()
+        else_expr: Optional[ExprAST] = cls.parse_expression()
         if not else_expr:
             return None
 
         return IfExprAST(if_loc, cond, then_expr, else_expr)
 
-    @staticmethod
-    def parse_float_expr() -> Optional[FloatExprAST]:
+    @classmethod
+    def parse_float_expr(cls) -> Optional[FloatExprAST]:
         """
         Parse the number expression.
 
@@ -241,8 +257,8 @@ class Parser:
         Lexer.get_next_token()  # consume the number
         return result
 
-    @staticmethod
-    def parse_paren_expr() -> Optional[ExprAST]:
+    @classmethod
+    def parse_paren_expr(cls) -> Optional[ExprAST]:
         """
         Parse the parenthesis expression.
 
@@ -252,7 +268,7 @@ class Parser:
             The parsed expression.
         """
         Lexer.get_next_token()  # eat (.
-        expr = self.parse_expression()
+        expr = cls.parse_expression()
         if not expr:
             return None
 
@@ -261,8 +277,8 @@ class Parser:
         Lexer.get_next_token()  # eat ).
         return expr
 
-    @staticmethod
-    def parse_identifier_expr() -> Optional[ExprAST]:
+    @classmethod
+    def parse_identifier_expr(cls) -> Optional[ExprAST]:
         """
         Parse the identifier expression.
 
@@ -287,7 +303,7 @@ class Parser:
         args: List[ExprAST] = []
         if Lexer.cur_tok != ")":
             while True:
-                arg: Optional[ExprAST] = self.parse_expression()
+                arg: Optional[ExprAST] = cls.parse_expression()
                 if arg:
                     args.append(arg)
                 else:
@@ -307,8 +323,8 @@ class Parser:
 
         return CallExprAST(id_loc, id_name, args)
 
-    @staticmethod
-    def parse_for_expr() -> Optional[ForExprAST]:
+    @classmethod
+    def parse_for_expr(cls) -> Optional[ForExprAST]:
         """
         Parse the `for` expression.
 
@@ -319,7 +335,7 @@ class Parser:
         """
         Lexer.get_next_token()  # eat the for.
 
-        if Lexer.cur_tok != tok_identifier:
+        if Lexer.cur_tok != Token.tok_identifier:
             return LogError("Parser: Expected identifier after for")
 
         id_name: str = Lexer.identifier_str
@@ -329,14 +345,14 @@ class Parser:
             return LogError("Parser: Expected '=' after for")
         Lexer.get_next_token()  # eat '='.
 
-        start: Optional[ExprAST] = self.parse_expression()
+        start: Optional[ExprAST] = cls.parse_expression()
         if not start:
             return None
         if Lexer.cur_tok != ",":
             return LogError("Parser: Expected ',' after for start value")
         Lexer.get_next_token()
 
-        end: Optional[ExprAST] = self.parse_expression()
+        end: Optional[ExprAST] = cls.parse_expression()
         if not end:
             return None
 
@@ -344,22 +360,22 @@ class Parser:
         step: Optional[ExprAST] = None
         if Lexer.cur_tok == ",":
             Lexer.get_next_token()
-            step = self.parse_expression()
+            step = cls.parse_expression()
             if not step:
                 return None
 
-        if Lexer.cur_tok != tok_in:
+        if Lexer.cur_tok != Token.tok_in:
             return LogError("Parser: Expected 'in' after for")
         Lexer.get_next_token()  # eat 'in'.
 
-        body: Optional[ExprAST] = self.parse_expression()
+        body: Optional[ExprAST] = cls.parse_expression()
         if not body:
             return None
 
         return ForExprAST(id_name, start, end, step, body)
 
-    @staticmethod
-    def parse_var_expr() -> Optional[VarExprAST]:
+    @classmethod
+    def parse_var_expr(cls) -> Optional[VarExprAST]:
         """
         Parse the `var` declaration expression.
 
@@ -373,7 +389,7 @@ class Parser:
         var_names: List[Tuple[str, Optional[ExprAST]]] = []
 
         # At least one variable name is required. #
-        if Lexer.cur_tok != tok_identifier:
+        if Lexer.cur_tok != Token.tok_identifier:
             return LogError("Parser: Expected identifier after var")
 
         while True:
@@ -385,7 +401,7 @@ class Parser:
             if Lexer.cur_tok == "=":
                 Lexer.get_next_token()  # eat the '='.
 
-                Init = self.parse_expression()
+                Init = cls.parse_expression()
                 if not Init:
                     return None
 
@@ -396,22 +412,22 @@ class Parser:
                 break
             Lexer.get_next_token()  # eat the ','.
 
-            if Lexer.cur_tok != tok_identifier:
+            if Lexer.cur_tok != Token.tok_identifier:
                 return LogError("Parser: Expected identifier list after var")
 
         # At this point, we have to have 'in'. #
-        if Lexer.cur_tok != tok_in:
+        if Lexer.cur_tok != Token.tok_in:
             return LogError("Parser: Expected 'in' keyword after 'var'")
         Lexer.get_next_token()  # eat 'in'.
 
-        body: Optional[ExprAST] = self.parse_expression()
+        body: Optional[ExprAST] = cls.parse_expression()
         if not body:
             return None
 
         return VarExprAST(var_names, body)
 
-    @staticmethod
-    def parse_unary() -> Optional[ExprAST]:
+    @classmethod
+    def parse_unary(cls) -> Optional[ExprAST]:
         """
         Parse a unary expression.
 
@@ -422,22 +438,23 @@ class Parser:
         """
         # If the current token is not an operator, it must be a primary expr.
         if (
-            not chr(Lexer.cur_tok).isascii()
+            not isinstance(Lexer.cur_tok, str)
             or Lexer.cur_tok == "("
             or Lexer.cur_tok == ","
         ):
-            return parse_primary()
+            return cls.parse_primary()
 
         # If this is a unary operator, read it.
         op_code: int = Lexer.cur_tok
         Lexer.get_next_token()
-        operand: Optional[ExprAST] = self.parse_unary()
+        operand: Optional[ExprAST] = cls.parse_unary()
         if operand:
             return UnaryExprAST(op_code, operand)
         return None
 
-    @staticmethod
+    @classmethod
     def parse_bin_op_rhs(
+        cls,
         expr_prec: int,
         lhs: ExprAST,
     ) -> Optional[ExprAST]:
@@ -458,7 +475,7 @@ class Parser:
         """
         # If this is a binop, find its precedence. #
         while True:
-            tok_prec: int = self.get_tok_precedence()
+            tok_prec: int = cls.get_tok_precedence()
 
             # If this is a binop that binds at least as tightly as the current binop,
             # consume it, otherwise we are done.
@@ -471,7 +488,7 @@ class Parser:
             Lexer.get_next_token()  # eat binop
 
             # Parse the unary expression after the binary operator.
-            rhs: Optional[ExprAST] = self.parse_unary()
+            rhs: Optional[ExprAST] = cls.parse_unary()
             if not rhs:
                 return None
 
@@ -479,7 +496,7 @@ class Parser:
             # the pending operator take rhs as its lhs.
             next_prec: int = get_tok_precedence()
             if tok_prec < next_prec:
-                rhs: Optional[ExprAST] = self.parse_bin_op_rhs(
+                rhs: Optional[ExprAST] = cls.parse_bin_op_rhs(
                     tok_prec + 1, rhs
                 )
                 if not rhs:
@@ -488,8 +505,8 @@ class Parser:
             # Merge lhs/rhs.
             lhs: Optional[ExprAST] = BinaryExprAST(bin_loc, bin_op, lhs, rhs)
 
-    @staticmethod
-    def parse_prototype() -> Optional[PrototypeAST]:
+    @classmethod
+    def parse_prototype(cls) -> Optional[PrototypeAST]:
         """
         Parse the prototype expression.
 
@@ -506,7 +523,7 @@ class Parser:
         cur_loc: SourceLocation
         fn_loc: SourceLocation = Lexer.cur_loc
 
-        if Lexer.cur_tok == tok_identifier:
+        if Lexer.cur_tok == Token.tok_identifier:
             fn_name = Lexer.identifier_str
             Lexer.get_next_token()
         else:
@@ -516,7 +533,7 @@ class Parser:
             return LogError("Parser: Expected '(' in the function definition.")
 
         args: List[VariableExprAST] = []
-        while Lexer.get_next_token() == tok_identifier:
+        while Lexer.get_next_token() == Token.tok_identifier:
             # note: this is a workaround
             identifier_name = Lexer.identifier_str
             cur_loc = Lexer.cur_loc
@@ -545,8 +562,8 @@ class Parser:
 
         return PrototypeAST(fn_loc, fn_name, ret_type_annotation, args)
 
-    @staticmethod
-    def parse_extern_prototype() -> Optional[PrototypeAST]:
+    @classmethod
+    def parse_extern_prototype(cls) -> Optional[PrototypeAST]:
         """
         Parse an extern prototype expression.
 
@@ -563,7 +580,7 @@ class Parser:
         cur_loc: SourceLocation
         fn_loc = Lexer.cur_loc
 
-        if Lexer.cur_tok == tok_identifier:
+        if Lexer.cur_tok == Token.tok_identifier:
             fn_name = Lexer.identifier_str
             Lexer.get_next_token()
         else:
@@ -573,7 +590,7 @@ class Parser:
             return LogError("Parser: Expected '(' in the function definition.")
 
         args: List[VariableExprAST] = []
-        while Lexer.get_next_token() == tok_identifier:
+        while Lexer.get_next_token() == Token.tok_identifier:
             # note: this is a workaround
             identifier_name = Lexer.identifier_str
             cur_loc = Lexer.cur_loc
@@ -597,8 +614,8 @@ class Parser:
 
         return PrototypeAST(fn_loc, fn_name, ret_type_annotation, args)
 
-    @staticmethod
-    def parse_return_function() -> Optional[ReturnExprAST]:
+    @classmethod
+    def parse_return_function(cls) -> Optional[ReturnExprAST]:
         """
         Parse the return expression.
 
@@ -608,4 +625,4 @@ class Parser:
             The parsed return expression, or None if parsing fails.
         """
         Lexer.get_next_token()  # eat return
-        return ReturnExprAST(parse_primary())
+        return ReturnExprAST(cls.parse_primary())

@@ -1,38 +1,8 @@
-from typing import Tuple
+from typing import Tuple, Union
 
+from arx.io import ArxIO
 
-def is_identifier_first_char(c: str) -> bool:
-    """
-    Check if the given character is a valid first identifier character.
-
-    Parameters
-    ----------
-    c : str
-        A single character for checking the token.
-
-    Returns
-    -------
-    bool
-        True if the token is valid, otherwise False.
-    """
-    return c.isalpha() or c == "_"
-
-
-def is_identifier_char(c: str) -> bool:
-    """
-    Check if the given character is a valid identifier character.
-
-    Parameters
-    ----------
-    c : str
-        Given character from a token.
-
-    Returns
-    -------
-    bool
-        True if the character is valid, otherwise False.
-    """
-    return c.isalnum() or c == "_"
+EOF = ""
 
 
 class Token:
@@ -128,14 +98,15 @@ class Lexer:
         Source location for lexer.
     """
 
-    cur_loc: SourceLocation
-    identifier_str: str
-    num_float: float
-    cur_tok: int
-    lex_loc: SourceLocation
+    cur_loc: SourceLocation = SourceLocation(0, 0)
+    identifier_str: str = ""
+    num_float: float = 0
+    cur_tok: int = 0
+    lex_loc: SourceLocation = SourceLocation(0, 0)
+    last_char: str = ""
 
-    @staticmethod
-    def get_tok_name(tok: int) -> str:
+    @classmethod
+    def get_tok_name(cls, tok: Union[int, str]) -> str:
         """
         Get the name of the specified token.
 
@@ -180,10 +151,10 @@ class Lexer:
         elif tok == Token.tok_const:
             return "const"
         else:
-            return chr(tok)
+            return tok
 
-    @staticmethod
-    def gettok() -> int:
+    @classmethod
+    def gettok(cls) -> int:
         """
         Get the next token.
 
@@ -192,18 +163,23 @@ class Lexer:
         int
             The next token from standard input.
         """
-        global last_char
+        if cls.last_char == "":
+            cls.last_char = cls.advance()
 
         # Skip any whitespace.
-        while last_char.isspace():
-            last_char = advance()
+        while cls.last_char.isspace():
+            cls.last_char = cls.advance()
 
         Lexer.cur_loc = Lexer.lex_loc
 
-        if is_identifier_first_char(last_char):
-            Lexer.identifier_str = last_char
-            while is_identifier_char(last_char := advance()):
-                Lexer.identifier_str += last_char
+        if cls.last_char.isalpha() or cls.last_char == "_":
+            # Identifier
+            Lexer.identifier_str = cls.last_char
+            cls.last_char = cls.advance()
+
+            while cls.last_char.isalnum() or cls.last_char == "_":
+                Lexer.identifier_str += cls.last_char
+                cls.last_char = cls.advance()
 
             if Lexer.identifier_str == "fn":
                 return Token.tok_function
@@ -228,34 +204,37 @@ class Lexer:
             return Token.tok_identifier
 
         # Number: [0-9.]+
-        if last_char.isdigit() or last_char == ".":
+        if cls.last_char.isdigit() or cls.last_char == ".":
             num_str = ""
-            while last_char.isdigit() or last_char == ".":
-                num_str += last_char
-                last_char = advance()
+            while cls.last_char.isdigit() or cls.last_char == ".":
+                num_str += cls.last_char
+                cls.last_char = cls.advance()
 
             Lexer.num_float = float(num_str)
             return Token.tok_float_literal
 
         # Comment until end of line.
-        if last_char == "#":
-            while last_char != EOF and last_char != "\n" and last_char != "\r":
-                last_char = advance()
+        if cls.last_char == "#":
+            while (
+                cls.last_char != EOF
+                and cls.last_char != "\n"
+                and cls.last_char != "\r"
+            ):
+                cls.last_char = cls.advance()
 
-            if last_char != EOF:
+            if cls.last_char != EOF:
                 return gettok()
 
         # Check for end of file. Don't eat the EOF.
-        if last_char == EOF:
+        if cls.last_char == EOF:
             return Token.tok_eof
 
-        # Otherwise, just return the character as its ASCII value.
-        this_char = ord(last_char)
-        last_char = advance()
+        this_char = cls.last_char
+        cls.last_char = cls.advance()
         return this_char
 
-    @staticmethod
-    def advance() -> int:
+    @classmethod
+    def advance(cls) -> str:
         """
         Advance the token from the buffer.
 
@@ -264,18 +243,18 @@ class Lexer:
         int
             Token in integer form.
         """
-        last_char = get_char()
+        last_char = ArxIO.get_char()
 
         if last_char == "\n" or last_char == "\r":
-            Lexer.lex_loc.line += 1
-            Lexer.lex_loc.col = 0
+            cls.lex_loc.line += 1
+            cls.lex_loc.col = 0
         else:
-            Lexer.lex_loc.col += 1
+            cls.lex_loc.col += 1
 
         return last_char
 
-    @staticmethod
-    def get_next_token() -> int:
+    @classmethod
+    def get_next_token(cls) -> int:
         """
         Provide a simple token buffer.
 
@@ -286,7 +265,7 @@ class Lexer:
             Reads another token from the lexer and updates
             cur_tok with its results.
         """
-        Lexer.cur_tok = gettok()
+        Lexer.cur_tok = cls.gettok()
         return Lexer.cur_tok
 
 

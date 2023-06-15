@@ -1,3 +1,10 @@
+from abc import ABC, abstractmethod
+from enum import Enum
+from typing import List, Tuple
+
+from arx.lexer import Lexer, SourceLocation
+
+
 class ExprKind(Enum):
     GenericKind = -1
 
@@ -46,7 +53,7 @@ class ExprKind(Enum):
 
 class Visitor(ABC):
     @abstractmethod
-    def visit(self, node: ExprAST):
+    def visit(self, node: "ExprAST"):
         pass
 
     @abstractmethod

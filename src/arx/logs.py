@@ -1,8 +1,6 @@
 import sys
 from typing import Optional, TypeVar
 
-import llvm
-
 
 def LogError(message: str):
     """
