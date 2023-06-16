@@ -1,5 +1,6 @@
+"""Module for handling all the global variables for llvm workflow."""
 import logging
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 import llvm
 
@@ -10,6 +11,8 @@ IS_BUILD_LIB: bool = False
 
 
 class ArxLLVM:
+    """ArxLLVM gathers all the main global variables for LLVM workflow."""
+
     context: Optional[llvm.LLVMContext] = None
     module: Optional[llvm.Module] = None
 
@@ -39,10 +42,12 @@ class ArxLLVM:
         """
         Get the LLVM data type for the given type name.
 
-        Args:
+        Parameters
+        ----------
             type_name (str): The name of the type.
 
-        Returns:
+        Returns
+        -------
             Optional[llvm.Type]: The LLVM data type.
         """
         if type_name == "float":
@@ -66,10 +71,12 @@ class ArxLLVM:
         """
         Get the LLVM debug information data type for the given type name.
 
-        Args:
+        Parameters
+        ----------
             di_type_name (str): The name of the type.
 
-        Returns:
+        Returns
+        -------
             Optional[llvm.DIType]: The LLVM debug information data type.
         """
         if di_type_name == "float":
@@ -90,9 +97,7 @@ class ArxLLVM:
 
     @staticmethod
     def initialize() -> None:
-        """
-        Initialize ArxLLVM.
-        """
+        """Initialize ArxLLVM."""
         # initialize the target registry etc.
         llvm.InitializeAllTargetInfos()
         llvm.InitializeAllTargets()

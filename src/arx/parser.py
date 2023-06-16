@@ -1,9 +1,5 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
-
-from llvmlite import ir
+"""parser module gather all functions and classes for parsing."""
+from typing import Dict, List, Optional, Tuple
 
 from arx.ast import (
     BinaryExprAST,
@@ -19,22 +15,22 @@ from arx.ast import (
     UnaryExprAST,
     VarExprAST,
     VariableExprAST,
-    Visitor,
 )
 from arx.lexer import Lexer, SourceLocation, Token
 from arx.logs import LogError
 
 
 class Parser:
-    bin_op_precedence: Dict[str, int] = {}
+    """Parser class."""
 
-    @classmethod
-    def setup(cls):
-        cls.bin_op_precedence["="] = 2
-        cls.bin_op_precedence["<"] = 10
-        cls.bin_op_precedence["+"] = 20
-        cls.bin_op_precedence["-"] = 20
-        cls.bin_op_precedence["*"] = 40
+    bin_op_precedence: Dict[str, int] = {
+        "=": 2,
+        "<": 10,
+        ">": 10,
+        "+": 20,
+        "-": 20,
+        "*": 40,
+    }
 
     @classmethod
     def parse(cls) -> Optional[TreeAST]:
@@ -47,6 +43,7 @@ class Parser:
             The parsed abstract syntax tree (AST), or None if parsing fails.
         """
         ast: TreeAST = TreeAST()
+        Lexer.get_next_token()
 
         while True:
             if Lexer.cur_tok == Token.tok_eof:
@@ -57,11 +54,11 @@ class Parser:
                 Lexer.get_next_token()
                 # ignore top-level semicolons.
             elif Lexer.cur_tok == Token.tok_function:
-                ast.nodes.append(parse_definition())
+                ast.nodes.append(cls.parse_definition())
             elif Lexer.cur_tok == Token.tok_extern:
-                ast.nodes.append(parse_extern())
+                ast.nodes.append(cls.parse_extern())
             else:
-                ast.nodes.append(parse_top_level_expr())
+                ast.nodes.append(cls.parse_top_level_expr())
 
         return ast
 
@@ -112,7 +109,8 @@ class Parser:
         Returns
         -------
         Optional[PrototypeAST]
-            The parsed extern expression as a prototype, or None if parsing fails.
+            The parsed extern expression as a prototype, or None if parsing
+            fails.
         """
         Lexer.get_next_token()  # eat extern.
         return cls.parse_extern_prototype()
@@ -125,7 +123,8 @@ class Parser:
         Returns
         -------
         Optional[FunctionAST]
-            The parsed top level expression as a function, or None if parsing fails.
+            The parsed top level expression as a function, or None if parsing
+            fails.
         """
         fn_loc: SourceLocation = Lexer.cur_loc
         if expr := cls.parse_expression():
@@ -168,7 +167,10 @@ class Parser:
             Lexer.get_next_token()  # eat tok_return
             return cls.parse_primary()
         else:
-            msg = f"Parser: Unknown token when expecting an expression: '{cur_tok}'."
+            msg = (
+                "Parser: Unknown token when expecting an expression:"
+                f"'{cur_tok}'."
+            )
             Lexer.get_next_token()  # eat unknown token
             return LogError(msg)
 
@@ -203,7 +205,7 @@ class Parser:
 
         Lexer.get_next_token()  # eat the if.
 
-        # condition.
+        breakpoint()
         cond: Optional[ExprAST] = cls.parse_expression()
         if not cond:
             return None
@@ -477,8 +479,8 @@ class Parser:
         while True:
             tok_prec: int = cls.get_tok_precedence()
 
-            # If this is a binop that binds at least as tightly as the current binop,
-            # consume it, otherwise we are done.
+            # If this is a binop that binds at least as tightly as the current
+            # binop, consume it, otherwise we are done.
             if tok_prec < expr_prec:
                 return lhs
 
@@ -492,9 +494,9 @@ class Parser:
             if not rhs:
                 return None
 
-            # If BinOp binds less tightly with rhs than the operator after rhs, let
-            # the pending operator take rhs as its lhs.
-            next_prec: int = get_tok_precedence()
+            # If BinOp binds less tightly with rhs than the operator after
+            # rhs, let the pending operator take rhs as its lhs
+            next_prec: int = cls.get_tok_precedence()
             if tok_prec < next_prec:
                 rhs: Optional[ExprAST] = cls.parse_bin_op_rhs(
                     tok_prec + 1, rhs

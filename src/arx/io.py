@@ -1,25 +1,31 @@
+"""Module for handling the IO used by the compiler."""
 import os
 import sys
 import tempfile
-from io import StringIO
 
 
 class ArxBuffer:
+    """ArxBuffer gathers function for handle the system buffer."""
+
     buffer: str = ""
     position: int = 0
 
     def __init__(self):
+        """Initialize ArxBuffer instance."""
         self.clean()
 
     def clean(self):
+        """Clean the buffer content."""
         self.position = 0
         self.buffer = ""
 
     def write(self, text: str):
+        """Write the given text to the buffer."""
         self.buffer += text
         self.position = 0
 
     def read(self):
+        """Read the buffer content."""
         try:
             i = self.position
             self.position += 1
@@ -31,9 +37,9 @@ class ArxBuffer:
 class ArxIO:
     """Arx class for Input and Output operations."""
 
-    INPUT_FROM_STDIN = False
-    INPUT_FILE = ""
-    EOF = sys.maxunicode + 1
+    INPUT_FROM_STDIN: bool = False
+    INPUT_FILE: str = ""
+    EOF: int = sys.maxunicode + 1
     buffer: ArxBuffer = ArxBuffer()
 
     @classmethod
@@ -80,20 +86,20 @@ class ArxIO:
 
     @classmethod
     def load_input_to_buffer(cls):
-        """
-        Load the content file or the standard input to the buffer.
-        """
-        if cls.INPUT_FILE != "":
+        """Load the content file or the standard input to the buffer."""
+        if cls.INPUT_FILE:
             input_file_path = os.path.abspath(cls.INPUT_FILE)
             cls.file_to_buffer(input_file_path)
-        else:
-            file_content = sys.stdin.read().strip()
+            return
 
-            if file_content != "":
-                cls.string_to_buffer(file_content)
+        file_content = sys.stdin.read().strip()
+        if file_content:
+            cls.string_to_buffer(file_content)
 
 
 class ArxFile:
+    """ArxFile gathers function to handle files."""
+
     @staticmethod
     def create_tmp_file(content: str) -> str:
         """

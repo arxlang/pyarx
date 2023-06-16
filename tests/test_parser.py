@@ -68,10 +68,9 @@ def test_get_next_token():
 
 
 def test_binop_precedence():
-    Parser.setup()
-
     assert Parser.bin_op_precedence["="] == 2
     assert Parser.bin_op_precedence["<"] == 10
+    assert Parser.bin_op_precedence[">"] == 10
     assert Parser.bin_op_precedence["+"] == 20
     assert Parser.bin_op_precedence["-"] == 20
     assert Parser.bin_op_precedence["*"] == 40

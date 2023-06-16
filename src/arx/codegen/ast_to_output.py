@@ -1,9 +1,27 @@
-from typing import List
+"""Set of classes and functions to emit the AST from a given source code."""
+from arx.ast import (
+    BinaryExprAST,
+    CallExprAST,
+    ExprAST,
+    FloatExprAST,
+    ForExprAST,
+    FunctionAST,
+    IfExprAST,
+    PrototypeAST,
+    ReturnExprAST,
+    TreeAST,
+    UnaryExprAST,
+    VarExprAST,
+    VariableExprAST,
+    Visitor,
+)
 
-from deps import *
+INDENT_SIZE = 2
 
 
-class ASTToOutputVisitor(Visitor, shared_from_this=True):
+class ASTToOutputVisitor(Visitor):
+    """Show the AST for the given source code."""
+
     def __init__(self):
         self.indent: int = 0
         self.annotation: str = ""
@@ -12,12 +30,13 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         """
         Get the string representing the current indentation level.
 
-        Returns:
+        Returns
+        -------
             The string representing the current indentation level.
         """
         return " " * self.indent
 
-    def set_annotation(self, annotation: str) -> None:
+    def set_annotation(self, annotation: str):
         """
         Set the annotation for the visitor.
 
@@ -30,14 +49,45 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         """
         Get the current annotation and reset it.
 
-        Returns:
+        Returns
+        -------
             The current annotation.
         """
         annotation = self.annotation
         self.annotation = ""
         return annotation
 
-    def visit(self, expr: FloatExprAST) -> None:
+    def visit(self, expr: ExprAST):
+        """Call the correspondent visit function for the given expr type."""
+        if isinstance(expr, BinaryExprAST):
+            return self.visit_binary_expr(expr)
+        elif isinstance(expr, CallExprAST):
+            return self.visit_call_expr(expr)
+        elif isinstance(expr, FloatExprAST):
+            return self.visit_float_expr(expr)
+        elif isinstance(expr, ForExprAST):
+            return self.visit_for_expr(expr)
+        elif isinstance(expr, FunctionAST):
+            return self.visit_function(expr)
+        elif isinstance(expr, IfExprAST):
+            return self.visit_if_expr(expr)
+        elif isinstance(expr, PrototypeAST):
+            return self.visit_prototype(expr)
+        elif isinstance(expr, ReturnExprAST):
+            return self.visit_return_expr(expr)
+        elif isinstance(expr, TreeAST):
+            return self.visit_tree(expr)
+        elif isinstance(expr, UnaryExprAST):
+            return self.visit_unary_expr(expr)
+        elif isinstance(expr, VarExprAST):
+            return self.visit_var_expr(expr)
+        elif isinstance(expr, VariableExprAST):
+            return self.visit_variable_expr(expr)
+        else:
+            print("Fail to downcasting ExprAST.")
+            return
+
+    def visit_float_expr(self, expr: FloatExprAST):
         """
         Visit a FloatExprAST node.
 
@@ -48,7 +98,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
             f"{self.indentation()}{self.get_annotation()}(Number {expr.val})"
         )
 
-    def visit(self, expr: VariableExprAST) -> None:
+    def visit_variable_expr(self, expr: VariableExprAST):
         """
         Visit a VariableExprAST node.
 
@@ -56,10 +106,11 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
             expr: The VariableExprAST node to visit.
         """
         print(
-            f"{self.indentation()}{self.get_annotation()}(VariableExprAST {expr.name})"
+            f"{self.indentation()}{self.get_annotation()}"
+            f"(VariableExprAST {expr.name})"
         )
 
-    def visit(self, expr: UnaryExprAST) -> None:
+    def visit_unary_expr(self, expr: UnaryExprAST):
         """
         Visit a UnaryExprAST node.
 
@@ -68,7 +119,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         """
         print("(UnaryExprAST)")
 
-    def visit(self, expr: BinaryExprAST) -> None:
+    def visit_binary_expr(self, expr: BinaryExprAST):
         """
         Visit a BinaryExprAST node.
 
@@ -95,7 +146,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit(self, expr: CallExprAST) -> None:
+    def visit_call_expr(self, expr: CallExprAST):
         """
         Visit a CallExprAST node.
 
@@ -109,7 +160,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         self.indent += INDENT_SIZE
 
         for node in expr.args:
-            node.get().accept(self)
+            node.accept(self)
             print()
 
         self.indent -= INDENT_SIZE
@@ -118,7 +169,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit(self, expr: IfExprAST) -> None:
+    def visit_if_expr(self, expr: IfExprAST):
         """
         Visit an IfExprAST node.
 
@@ -153,7 +204,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit(self, expr: ForExprAST) -> None:
+    def visit_for_expr(self, expr: ForExprAST):
         """
         Visit a ForExprAST node.
 
@@ -188,7 +239,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit(self, expr: VarExprAST) -> None:
+    def visit_var_expr(self, expr: VarExprAST):
         """
         Visit a VarExprAST node.
 
@@ -206,7 +257,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
 
         print(")")
 
-    def visit(self, expr: PrototypeAST) -> None:
+    def visit_prototype(self, expr: PrototypeAST):
         """
         Visit a PrototypeAST node.
 
@@ -215,7 +266,7 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         """
         print(f"(PrototypeAST {expr.name})")
 
-    def visit(self, expr: FunctionAST) -> None:
+    def visit_function(self, expr: FunctionAST):
         """
         Visit a FunctionAST node.
 
@@ -246,23 +297,26 @@ class ASTToOutputVisitor(Visitor, shared_from_this=True):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit(self, expr: ReturnExprAST) -> None:
+    def visit_return_expr(self, expr: ReturnExprAST):
         """
         Visit a ReturnExprAST node.
 
         Args:
             expr: The ReturnExprAST node to visit.
         """
-        print(f"(ReturnExprAST {self.visit(expr)})")
+        print(f"(ReturnExprAST {self.visit(expr.expr)})")
 
 
-def print_ast(ast: TreeAST) -> int:
+def emit_ast(ast: TreeAST) -> int:
+    """Print the AST for the given source code."""
     visitor_print = ASTToOutputVisitor()
 
     print("[")
     visitor_print.indent += INDENT_SIZE
 
     for node in ast.nodes:
+        if not node:
+            continue
         node.accept(visitor_print)
         print(f"{visitor_print.indentation()},")
 

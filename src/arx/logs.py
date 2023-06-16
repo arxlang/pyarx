@@ -1,5 +1,5 @@
+"""The logs functions and classes handle all the system messages."""
 import sys
-from typing import Optional, TypeVar
 
 
 def LogError(message: str):

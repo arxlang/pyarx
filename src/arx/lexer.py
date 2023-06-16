@@ -1,4 +1,5 @@
-from typing import Tuple, Union
+"""Module for handling the lexer analysis."""
+from typing import Union
 
 from arx.io import ArxIO
 
@@ -223,7 +224,7 @@ class Lexer:
                 cls.last_char = cls.advance()
 
             if cls.last_char != EOF:
-                return gettok()
+                return cls.gettok()
 
         # Check for end of file. Don't eat the EOF.
         if cls.last_char == EOF:
@@ -271,17 +272,19 @@ class Lexer:
 
 def get_token_value(tok: int) -> str:
     """
-    Returns the string representation of a token value.
+    Return the string representation of a token value.
 
-    Args:
+    Parameters
+    ----------
         tok (int): The token value.
 
-    Returns:
+    Returns
+    -------
         str: The string representation of the token value.
     """
-    if tok == tok_identifier:
+    if tok == Token.tok_identifier:
         return "(" + Lexer.identifier_str + ")"
-    elif tok == tok_float_literal:
+    elif tok == Token.tok_float_literal:
         return "(" + str(Lexer.num_float) + ")"
     else:
         return ""

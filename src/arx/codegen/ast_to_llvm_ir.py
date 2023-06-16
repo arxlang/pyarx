@@ -311,49 +311,49 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
         )
 
 
-def compile_llvm_ir(ast: deps.TreeAST) -> int:
+def compile_llvm_ir(ast: TreeAST) -> int:
     """
     Compile an AST to object file.
 
-    Args:
-        ast (deps.TreeAST): The AST tree object.
+    Parameters:
+    -----------
+        ast (TreeAST): The AST tree object.
 
     Returns:
+    --------
         int: The result of the compilation.
     """
     codegen = ASTToLLVMIRVisitor()
 
-    deps.Lexer.get_next_token()
+    Lexer.get_next_token()
 
     codegen.initialize()
 
-    deps.LOG(deps.INFO) << "Starting main_loop"
+    LOG(INFO) << "Starting main_loop"
 
-    codegen.llvm_di_compile_unit = deps.ArxLLVM.di_builder.createCompileUnit(
+    codegen.llvm_di_compile_unit = ArxLLVM.di_builder.createCompileUnit(
         llvm.dwarf.DW_LANG_C,
-        deps.ArxLLVM.di_builder.createFile("fib.ks", "."),
+        ArxLLVM.di_builder.createFile("fib.ks", "."),
         "Arx Compiler",
         False,
         "",
         0,
     )
 
-    deps.LOG(deps.INFO) << "initialize Target"
+    LOG(INFO) << "initialize Target"
 
-    deps.ArxLLVM.module.addModuleFlag(
+    ArxLLVM.module.addModuleFlag(
         llvm.Module.Warning, "Debug Info Version", llvm.DEBUG_METADATA_VERSION
     )
 
     if llvm.Triple(llvm.sys.getProcessTriple()).isOSDarwin():
-        deps.ArxLLVM.module.addModuleFlag(
-            llvm.Module.Warning, "Dwarf Version", 2
-        )
+        ArxLLVM.module.addModuleFlag(llvm.Module.Warning, "Dwarf Version", 2)
 
-    deps.ArxLLVM.di_builder = llvm.DIBuilder(deps.ArxLLVM.module)
+    ArxLLVM.di_builder = llvm.DIBuilder(ArxLLVM.module)
 
-    codegen.llvm_di_compile_unit = deps.ArxLLVM.di_builder.createCompileUnit(
+    codegen.llvm_di_compile_unit = ArxLLVM.di_builder.createCompileUnit(
         llvm.dwarf.DW_LANG_C,
-        deps.ArxLLVM.di_builder.createFile("fib.arxks", "."),
+        ArxLLVM.di_builder.createFile("fib.arxks", "."),
         "Arx Compiler",
         False,
         "",
@@ -362,8 +362,8 @@ def compile_llvm_ir(ast: deps.TreeAST) -> int:
 
     codegen.main_loop(ast)
 
-    deps.ArxLLVM.di_builder.finalize()
-    deps.ArxLLVM.module.print(llvm.errs(), None)
+    ArxLLVM.di_builder.finalize()
+    ArxLLVM.module.print(llvm.errs(), None)
 
     return 0
 
@@ -375,8 +375,8 @@ def open_shell_llvm_ir() -> int:
     Returns:
         int: The result of the shell opening.
     """
-    deps.stderr.write("Arx {}\n".format(deps.ARX_VERSION))
-    deps.stderr.write(">>> ")
+    stderr.write("Arx {}\n".format(ARX_VERSION))
+    stderr.write(">>> ")
 
-    ast = deps.TreeAST()
+    ast = TreeAST()
     return compile_llvm_ir(ast)

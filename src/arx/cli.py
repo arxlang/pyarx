@@ -1,6 +1,5 @@
+"""Functions and classes for handling the CLI call."""
 import argparse
-import os
-import sys
 
 from arx.main import ArxMain, __version__
 
@@ -31,7 +30,6 @@ class CustomHelpFormatter(argparse.RawTextHelpFormatter):
 
 def get_args():
     """Get the CLI arguments."""
-
     parser = argparse.ArgumentParser(
         prog="arx",
         description=(
