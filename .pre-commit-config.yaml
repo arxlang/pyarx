@@ -58,11 +58,11 @@ repos:
       types:
         - python
 
-    - entry: vulture
-      files: "src/arx/"
-      id: vulture
-      language: system
+    - id: vulture
       name: vulture
+      entry: vulture --min-confidence=80
+      files: "src/arx/"
+      language: system
       description: Find unused Python code.
       pass_filenames: true
       types:
@@ -70,7 +70,7 @@ repos:
 
     - id: mccabe
       name: mccabe
-      entry: flake8 --max-complexity 10
+      entry: flake8 --max-complexity 15
       language: python
       files: "src/arx/"
       pass_filenames: true

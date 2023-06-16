@@ -6,6 +6,23 @@ from arx.io import ArxIO
 EOF = ""
 
 
+class SourceLocation:
+    """
+    Represents the source location with line and column information.
+
+    Attributes
+    ----------
+    line : int
+        Line number.
+    col : int
+        Column number.
+    """
+
+    def __init__(self, line: int, col: int) -> None:
+        self.line = line
+        self.col = col
+
+
 class Token:
     """
     Token enumeration for known variables returned by the lexer.
@@ -64,21 +81,37 @@ class Token:
     tok_not_initialized: int = -9999
 
 
-class SourceLocation:
-    """
-    Represents the source location with line and column information.
+MAP_NAME_TO_KW_TOKEN = {
+    "fn": Token.tok_function,
+    "return": Token.tok_return,
+    "extern": Token.tok_extern,
+    "if": Token.tok_if,
+    "else": Token.tok_else,
+    "for": Token.tok_for,
+    "in": Token.tok_in,
+    "binary": Token.tok_binary,
+    "unary": Token.tok_unary,
+    "var": Token.tok_var,
+}
 
-    Attributes
-    ----------
-    line : int
-        Line number.
-    col : int
-        Column number.
-    """
 
-    def __init__(self, line: int, col: int) -> None:
-        self.line = line
-        self.col = col
+MAP_KW_TOKEN_TO_NAME = {
+    Token.tok_eof: "eof",
+    Token.tok_function: "function",
+    Token.tok_return: "return",
+    Token.tok_extern: "extern",
+    Token.tok_identifier: "identifier",
+    Token.tok_float_literal: "float",
+    Token.tok_if: "if",
+    Token.tok_then: "then",
+    Token.tok_else: "else",
+    Token.tok_for: "for",
+    Token.tok_in: "in",
+    Token.tok_binary: "binary",
+    Token.tok_unary: "unary",
+    Token.tok_var: "var",
+    Token.tok_const: "const",
+}
 
 
 class Lexer:
@@ -107,7 +140,7 @@ class Lexer:
     last_char: str = ""
 
     @classmethod
-    def get_tok_name(cls, tok: Union[int, str]) -> str:
+    def get_tok_name(cls, tok: Union[int, str]) -> Union[str, int]:
         """
         Get the name of the specified token.
 
@@ -121,38 +154,7 @@ class Lexer:
         str
             Name of the token.
         """
-        if tok == Token.tok_eof:
-            return "eof"
-        elif tok == Token.tok_function:
-            return "function"
-        elif tok == Token.tok_return:
-            return "return"
-        elif tok == Token.tok_extern:
-            return "extern"
-        elif tok == Token.tok_identifier:
-            return "identifier"
-        elif tok == Token.tok_float_literal:
-            return "float"
-        elif tok == Token.tok_if:
-            return "if"
-        elif tok == Token.tok_then:
-            return "then"
-        elif tok == Token.tok_else:
-            return "else"
-        elif tok == Token.tok_for:
-            return "for"
-        elif tok == Token.tok_in:
-            return "in"
-        elif tok == Token.tok_binary:
-            return "binary"
-        elif tok == Token.tok_unary:
-            return "unary"
-        elif tok == Token.tok_var:
-            return "var"
-        elif tok == Token.tok_const:
-            return "const"
-        else:
-            return tok
+        return MAP_KW_TOKEN_TO_NAME.get(tok) or tok
 
     @classmethod
     def gettok(cls) -> int:
@@ -182,27 +184,9 @@ class Lexer:
                 Lexer.identifier_str += cls.last_char
                 cls.last_char = cls.advance()
 
-            if Lexer.identifier_str == "fn":
-                return Token.tok_function
-            if Lexer.identifier_str == "return":
-                return Token.tok_return
-            if Lexer.identifier_str == "extern":
-                return Token.tok_extern
-            if Lexer.identifier_str == "if":
-                return Token.tok_if
-            if Lexer.identifier_str == "else":
-                return Token.tok_else
-            if Lexer.identifier_str == "for":
-                return Token.tok_for
-            if Lexer.identifier_str == "in":
-                return Token.tok_in
-            if Lexer.identifier_str == "binary":
-                return Token.tok_binary
-            if Lexer.identifier_str == "unary":
-                return Token.tok_unary
-            if Lexer.identifier_str == "var":
-                return Token.tok_var
-            return Token.tok_identifier
+            return MAP_NAME_TO_KW_TOKEN.get(
+                Lexer.identifier_str, Token.tok_identifier
+            )
 
         # Number: [0-9.]+
         if cls.last_char.isdigit() or cls.last_char == ".":

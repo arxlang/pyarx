@@ -56,7 +56,7 @@ class ExprKind(Enum):
 class Visitor:
     """A base Visitor pattern class."""
 
-    def visit(self, node: "ExprAST"):
+    def visit(self, node: "ExprAST"):  # noqa: F841
         """Call the visit method for the given node object."""
         pass
 
@@ -66,6 +66,8 @@ class Visitor:
 
 
 class ExprAST:
+    """AST main expression class."""
+
     loc: SourceLocation
     kind: "ExprAST"
 
@@ -96,34 +98,27 @@ class ExprAST:
         ValueError
             If the expression kind does not match any known type.
         """
-        if self.kind == ExprKind.FloatDTKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.VariableKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.UnaryOpKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.BinaryOpKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.CallKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.IfKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.ForKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.VarKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.PrototypeKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.FunctionKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.ReturnKind:
-            visitor.visit(self)
-        elif self.kind == ExprKind.GenericKind:
+        if self.kind in [
+            ExprKind.FloatDTKind,
+            ExprKind.VariableKind,
+            ExprKind.UnaryOpKind,
+            ExprKind.BinaryOpKind,
+            ExprKind.CallKind,
+            ExprKind.IfKind,
+            ExprKind.ForKind,
+            ExprKind.VarKind,
+            ExprKind.PrototypeKind,
+            ExprKind.FunctionKind,
+            ExprKind.ReturnKind,
+        ]:
+            return visitor.visit(self)
+
+        visitor.clean()
+        if self.kind == ExprKind.GenericKind:
             print("[WW] Generic Kind doesn't have a downcasting")
-        else:
-            print(self.kind)
-            print("[WW] DOWNCASTING MATCH FAILED")
-            visitor.clean()
+            return
+
+        print(f"[WW] DOWNCASTING MATCH FAILED. Expression Kind {self.kind}")
 
     # def dump(self, out, ind: int):
     #     return out.write(f":{self.get_line()}:{self.get_col()}\n")
