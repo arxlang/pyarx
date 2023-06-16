@@ -14,10 +14,10 @@ from arx.ast import (
     VarExprAST,
     VariableExprAST,
 )
-from arx.codegen.ast_to_object import ASTToObjectVisitor
+from arx.codegen.ast_to_object import ObjectGeneratorVisitor
 
 
-class ASTToLLVMIRVisitor(ASTToObjectVisitor):
+class ASTToLLVMIRVisitor(ObjectGeneratorVisitor):
     def __init__(self):
         super().__init__()
         self.llvm_di_compile_unit: Optional[llvm.DICompileUnit] = None
@@ -35,7 +35,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_variable_expr(self, expr: VariableExprAST) -> None:
         """
@@ -48,7 +48,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_unary_expr(self, expr: UnaryExprAST) -> None:
         """
@@ -61,7 +61,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_binary_expr(self, expr: BinaryExprAST) -> None:
         """
@@ -74,7 +74,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_call_expr(self, expr: CallExprAST) -> None:
         """
@@ -87,7 +87,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_if_expr(self, expr: IfExprAST) -> None:
         """
@@ -100,7 +100,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_for_expr(self, expr: ForExprAST) -> None:
         """
@@ -113,7 +113,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_var_expr(self, expr: VarExprAST) -> None:
         """
@@ -126,7 +126,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
             None
         """
         self.emit_location(expr)
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_prototype_expr(self, expr: PrototypeAST) -> None:
         """
@@ -138,7 +138,7 @@ class ASTToLLVMIRVisitor(ASTToObjectVisitor):
         Returns:
             None
         """
-        ASTToObjectVisitor.visit(expr)
+        ObjectGeneratorVisitor.visit(expr)
 
     def visit_function(self, expr: FunctionAST) -> None:
         """

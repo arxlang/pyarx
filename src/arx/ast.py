@@ -1,6 +1,6 @@
 """AST classes and functions."""
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Type, Callable
 
 from arx.lexer import Lexer, SourceLocation
 
@@ -56,13 +56,70 @@ class ExprKind(Enum):
 class Visitor:
     """A base Visitor pattern class."""
 
-    def visit(self, node: "ExprAST"):  # noqa: F841
-        """Call the visit method for the given node object."""
-        pass
+    def visit(self, expr: "ExprAST"):
+        """Call the correspondent visit function for the given expr type."""
+        map_visit_expr: Dict[Type[ExprAST], Callable] = {
+            BinaryExprAST: self.visit_binary_expr,
+            CallExprAST: self.visit_call_expr,
+            FloatExprAST: self.visit_float_expr,
+            ForExprAST: self.visit_for_expr,
+            FunctionAST: self.visit_function,
+            IfExprAST: self.visit_if_expr,
+            PrototypeAST: self.visit_prototype,
+            ReturnExprAST: self.visit_return_expr,
+            TreeAST: self.visit_tree,
+            UnaryExprAST: self.visit_unary_expr,
+            VarExprAST: self.visit_var_expr,
+            VariableExprAST: self.visit_variable_expr,
+        }
+
+        fn = map_visit_expr.get(type(expr))
+
+        if not fn:
+            print("Fail to downcasting ExprAST.")
+            return
+
+        fn(expr)
+
+    def visit_binary_expr(self, expr: "BinaryExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_call_expr(self, expr: "CallExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_float_expr(self, expr: "FloatExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_for_expr(self, expr: "ForExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_function(self, expr: "FunctionAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_if_expr(self, expr: "IfExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_prototype(self, expr: "PrototypeAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_return_expr(self, expr: "ReturnExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_tree(self, expr: "TreeAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_unary_expr(self, expr: "UnaryExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_var_expr(self, expr: "VarExprAST"):
+        raise Exception("Not implemented yet.")
+
+    def visit_variable_expr(self, expr: "VariableExprAST"):
+        raise Exception("Not implemented yet.")
 
     def clean(self):
         """Clean instance attributes."""
-        pass
+        raise Exception("Not implemented yet.")
 
 
 class ExprAST:
@@ -358,4 +415,4 @@ class TreeAST(ExprAST):
     def __init__(self):
         """Initialize the TreeAST instance."""
         super().__init__()
-        self.nodes = []
+        self.nodes: List[ExprAST] = []

@@ -57,36 +57,6 @@ class ASTToOutputVisitor(Visitor):
         self.annotation = ""
         return annotation
 
-    def visit(self, expr: ExprAST):
-        """Call the correspondent visit function for the given expr type."""
-        if isinstance(expr, BinaryExprAST):
-            return self.visit_binary_expr(expr)
-        elif isinstance(expr, CallExprAST):
-            return self.visit_call_expr(expr)
-        elif isinstance(expr, FloatExprAST):
-            return self.visit_float_expr(expr)
-        elif isinstance(expr, ForExprAST):
-            return self.visit_for_expr(expr)
-        elif isinstance(expr, FunctionAST):
-            return self.visit_function(expr)
-        elif isinstance(expr, IfExprAST):
-            return self.visit_if_expr(expr)
-        elif isinstance(expr, PrototypeAST):
-            return self.visit_prototype(expr)
-        elif isinstance(expr, ReturnExprAST):
-            return self.visit_return_expr(expr)
-        elif isinstance(expr, TreeAST):
-            return self.visit_tree(expr)
-        elif isinstance(expr, UnaryExprAST):
-            return self.visit_unary_expr(expr)
-        elif isinstance(expr, VarExprAST):
-            return self.visit_var_expr(expr)
-        elif isinstance(expr, VariableExprAST):
-            return self.visit_variable_expr(expr)
-        else:
-            print("Fail to downcasting ExprAST.")
-            return
-
     def visit_float_expr(self, expr: FloatExprAST):
         """
         Visit a FloatExprAST node.

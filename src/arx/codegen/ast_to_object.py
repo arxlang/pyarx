@@ -1,58 +1,33 @@
 import logging
 import os
-import subprocess
 import sys
-from parser import PrototypeAST, TreeAST
-from typing import List
+from arx.parser import PrototypeAST, TreeAST
+from typing import List, Any
 
-import llvm
-from llvm import MC, AllocaInst, Function, Support, Value
-from llvm.ir import (
-    AllocaInst,
-    Argument,
-    BasicBlock,
-    CallInst,
-    Constant,
-    ConstantFP,
-    Function,
-    IRBuilder,
-    LLVMContext,
-    Module,
-    PHINode,
-)
-from llvm.legacy import FunctionPassManager, PassManager
-from llvm.support import (
-    APFloat,
-    FileSystem,
-    OpenFlags,
-    Optional,
-    StringRef,
-    Twine,
-    getDefaultTargetTriple,
-    iterator_range,
-    raw_fd_ostream,
-    raw_ostream,
-)
-from llvm.target import (
-    CodeGenFileType,
-    InitializeAllAsmParsers,
-    InitializeAllAsmPrinters,
-    InitializeAllTargetInfos,
-    InitializeAllTargets,
-    Model,
-    Target,
-    TargetMachine,
-    TargetOptions,
-    TargetRegistry,
-)
-from llvm.verify import verifyFunction
+from llvmlite import binding as llvm
 
+from arx.ast import (
+    BinaryExprAST,
+    CallExprAST,
+    ExprAST,
+    FloatExprAST,
+    ForExprAST,
+    FunctionAST,
+    IfExprAST,
+    PrototypeAST,
+    ReturnExprAST,
+    TreeAST,
+    UnaryExprAST,
+    VarExprAST,
+    VariableExprAST,
+    Visitor,
+)
+
+from arx.codegen.base import CodeGenBase
 from arx.codegen.arx_llvm import ArxLLVM
-from arx.codegen.ast_to_object import ASTToObjectVisitor, compile_object
-from arx.error import LogErrorV
+from arx.logs import LogErrorV
 from arx.io import ArxFile
 from arx.lexer import Lexer
-from arx.parser import ExprAST, ForExprAST, PrototypeAST
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
@@ -78,28 +53,24 @@ def string_join(elements: List[str], delimiter: str) -> str:
 INPUT_FILE: str = ""
 OUTPUT_FILE: str = ""
 ARX_VERSION: str = ""
+IS_BUILD_LIB: bool = True
 
 
-class ASTToObjectVisitor(Visitor):
+class ObjectGeneratorVisitor(Visitor):
     def __init__(self):
         self.result_val: Value = None
         self.result_func: Function = None
 
-    def visit(self, expr: ExprAST):
-        pass
-
-    def visit_FloatExprAST(self, expr: FloatExprAST) -> None:
+    def visit_float_expr(self, expr: FloatExprAST):
         """
         Code generation for FloatExprAST.
 
         Args:
             expr: The FloatExprAST instance
         """
-        self.result_val = llvm.ConstantFP.get(
-            ArxLLVM.context, llvm.APFloat(expr.val)
-        )
+        self.result_val = llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, expr.val)
 
-    def visit_VariableExprAST(self, expr: VariableExprAST) -> None:
+    def visit_variable_expr(self, expr: VariableExprAST):
         """
         Code generation for VariableExprAST.
 
@@ -113,11 +84,9 @@ class ASTToObjectVisitor(Visitor):
             self.result_val = LogErrorV(msg)
             return
 
-        self.result_val = ArxLLVM.ir_builder.CreateLoad(
-            ArxLLVM.FLOAT_TYPE, expr_var, expr.name
-        )
+        self.result_val = ArxLLVM.ir_builder.load(expr_var, expr.name)
 
-    def visit_UnaryExprAST(self, expr: UnaryExprAST) -> None:
+    def visit_unary_expr(self, expr: UnaryExprAST):
         """
         Code generation for UnaryExprAST.
 
@@ -141,7 +110,7 @@ class ASTToObjectVisitor(Visitor):
             fn, operand_value, "unop"
         )
 
-    def visit_BinaryExprAST(self, expr: BinaryExprAST) -> None:
+    def visit_binary_expr(self, expr: BinaryExprAST):
         """
         Code generation for BinaryExprAST.
 
@@ -217,7 +186,7 @@ class ASTToObjectVisitor(Visitor):
             Ops = [llvm_val_lhs, llvm_val_rhs]
             self.result_val = ArxLLVM.ir_builder.CreateCall(fn, Ops, "binop")
 
-    def visit_CallExprAST(self, expr: CallExprAST) -> None:
+    def visit_call_expr(self, expr: CallExprAST):
         """
         Code generation for CallExprAST.
 
@@ -248,7 +217,7 @@ class ASTToObjectVisitor(Visitor):
             callee_f, args_v, "calltmp"
         )
 
-    def visit_IfExprAST(self, expr: IfExprAST) -> None:
+    def visit_ir_expr(self, expr: IfExprAST):
         """
         Code generation for IfExprAST.
 
@@ -265,7 +234,7 @@ class ASTToObjectVisitor(Visitor):
         # Convert condition to a bool by comparing non-equal to 0.0.
         cond_v = ArxLLVM.ir_builder.CreateFCmpONE(
             cond_v,
-            llvm.ConstantFP.get(ArxLLVM.context, llvm.APFloat(0.0)),
+            llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0.0),
             "ifcond",
         )
 
@@ -317,7 +286,7 @@ class ASTToObjectVisitor(Visitor):
         self.result_val = pn
         return
 
-    def visit_ForExprAST(self, expr: ForExprAST) -> None:
+    def visit_for_expr(self, expr: ForExprAST):
         """
         Code generation for ForExprAST.
 
@@ -376,7 +345,7 @@ class ASTToObjectVisitor(Visitor):
                 return
         else:
             # If not specified, use 1.0.
-            step_val = llvm.ConstantFP.get(ArxLLVM.context, llvm.APFloat(1.0))
+            step_val = llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 1.0)
 
         # Compute the end condition.
         expr.end.accept(self)
@@ -396,7 +365,7 @@ class ASTToObjectVisitor(Visitor):
         # Convert condition to a bool by comparing non-equal to 0.0.
         end_cond = ArxLLVM.ir_builder.CreateFCmpONE(
             end_cond,
-            llvm.ConstantFP.get(ArxLLVM.context, llvm.APFloat(0.0)),
+            llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0.0),
             "loopcond",
         )
 
@@ -416,9 +385,9 @@ class ASTToObjectVisitor(Visitor):
             ArxLLVM.named_values.pop(expr.var_name, None)
 
         # for expr always returns 0.0.
-        self.result_val = llvm.Constant.getNullValue(ArxLLVM.FLOAT_TYPE)
+        self.result_val = llvm.ir.Constant.getNullValue(ArxLLVM.FLOAT_TYPE)
 
-    def visit_VarExprAST(self, expr: VarExprAST) -> None:
+    def visit_var_expr(self, expr: VarExprAST):
         """
         Code generation for VarExprAST.
 
@@ -445,9 +414,7 @@ class ASTToObjectVisitor(Visitor):
                     self.result_val = None
                     return
             else:  # If not specified, use 0.0.
-                init_val = llvm.ConstantFP.get(
-                    ArxLLVM.context, llvm.APFloat(0.0)
-                )
+                init_val = llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0.0)
 
             # TODO: replace "float" for the actual type_name from the argument
             alloca = create_entry_block_alloca(fn, var_name, "float")
@@ -474,7 +441,7 @@ class ASTToObjectVisitor(Visitor):
         # Return the body computation.
         self.result_val = body_val
 
-    def visit_PrototypeAST(self, expr: PrototypeAST) -> None:
+    def visit_prototype(self, expr: PrototypeAST):
         """
         Code generation for PrototypeExprAST.
 
@@ -484,11 +451,9 @@ class ASTToObjectVisitor(Visitor):
         args_type = [ArxLLVM.FLOAT_TYPE] * len(expr.args)
         return_type = ArxLLVM.get_data_type("float")
 
-        fn_type = llvm.FunctionType(return_type, args_type, False)
+        fn_type = llvm.ir.FunctionType(return_type, args_type, False)
 
-        fn = llvm.Function.Create(
-            fn_type, llvm.Function.ExternalLinkage, expr.name, ArxLLVM.module
-        )
+        fn = llvm.ir.Function(ArxLLVM.module, fn_type, expr.name)
 
         # Set names for all arguments.
         idx = 0
@@ -498,7 +463,7 @@ class ASTToObjectVisitor(Visitor):
 
         self.result_func = fn
 
-    def visit_FunctionAST(self, expr: FunctionAST) -> None:
+    def visit_function(self, expr: FunctionAST):
         """
         Code generation for FunctionExprAST.
 
@@ -518,35 +483,33 @@ class ASTToObjectVisitor(Visitor):
             return
 
         # Create a new basic block to start insertion into.
-        basic_block = llvm.BasicBlock.Create(ArxLLVM.context, "entry", fn)
-        ArxLLVM.ir_builder.SetInsertPoint(basic_block)
+        basic_block = fn.append_basic_block("entry")
 
         # Record the function arguments in the named_values map.
         ArxLLVM.named_values.clear()
 
+        builder = llvm.ir.IRBuilder(basic_block)
+
         for llvm_arg in fn.args:
             # Create an alloca for this variable.
-            alloca = self.create_entry_block_alloca(
-                fn, llvm_arg.getName(), "float"
-            )
+            alloca = builder.alloca(ArxLLVM.FLOAT_TYPE, llvm_arg._get_name())
 
             # Store the initial value into the alloca.
-            ArxLLVM.ir_builder.CreateStore(llvm_arg, alloca)
+            builder.store(llvm_arg, alloca)
 
             # Add arguments to variable symbol table.
-            ArxLLVM.named_values[str(llvm_arg.getName())] = alloca
+            ArxLLVM.named_values[str(llvm_arg._get_name())] = alloca
 
         expr.body.accept(self)
 
         # Validate the generated code, checking for consistency.
-        llvm.verifyFunction(fn)
         self.result_func = fn
-        #  return;
-        #  // Error reading body, remove function.
-        #  fn->eraseFromParent();
-        #  this->result_func = nullptr;
+        if self.result_val:
+            builder.ret(self.result_val)
+            return
+        builder.ret(llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0))
 
-    def visit_ReturnExprAST(self, expr: ReturnExprAST) -> None:
+    def visit_return_expr(self, expr: ReturnExprAST):
         """
         Code generation for ReturnExprAST.
 
@@ -558,21 +521,22 @@ class ASTToObjectVisitor(Visitor):
         if llvm_return_val:
             ArxLLVM.ir_builder.CreateRet(llvm_return_val)
 
-    def clean(self) -> None:
+    def clean(self):
         """
         Set to None result_val and result_func in order to avoid trash.
         """
         self.result_val = None
         self.result_func = None
 
-    def get_function(self, name: str) -> None:
+    def get_function(self, name: str):
         """
         Put the function defined by the given name to result_func.
 
         Args:
             name: Function name
         """
-        if fn := ArxLLVM.module.get_function(name):
+        if name in ArxLLVM.module.globals:
+            fn = ArxLLVM.module.get_global(name)
             self.result_func = fn
             return
 
@@ -580,8 +544,8 @@ class ASTToObjectVisitor(Visitor):
             ArxLLVM.function_protos[name].accept(self)
 
     def create_entry_block_alloca(
-        self, fn: llvm.Function, var_name: llvm.StringRef, type_name: str
-    ) -> llvm.AllocaInst:
+        self, fn: llvm.ir.Function, var_name: str, type_name: str
+    ) -> Any:  # llvm.AllocaInst
         """
         Create the Entry Block Allocation.
 
@@ -596,14 +560,13 @@ class ASTToObjectVisitor(Visitor):
         create_entry_block_alloca - Create an alloca instruction in the entry
         block of the function. This is used for mutable variables, etc.
         """
-        tmp_builder = llvm.IRBuilder(
-            fn.get_entry_block(), fn.get_entry_block().begin()
-        )
-        return tmp_builder.CreateAlloca(
+        tmp_builder = llvm.ir.IRBuilder()
+        tmp_builder.position_at_start(fn.entry_basic_block)
+        return tmp_builder.alloca(
             ArxLLVM.get_data_type(type_name), None, var_name
         )
 
-    def main_loop(self, ast: TreeAST) -> None:
+    def visit_tree(self, ast: TreeAST):
         """
         The main loop that walks the AST.
         top ::= definition | external | expression | ';'
@@ -614,170 +577,159 @@ class ASTToObjectVisitor(Visitor):
         for node in ast.nodes:
             node.accept(self)
 
-    def initialize(self) -> None:
+
+class ObjectGenerator(CodeGenBase):
+    output_file: str = ""
+    input_file: str = ""
+
+    def __init__(self):
+        self.codegen = ObjectGeneratorVisitor()
+
+        self.initialize()
+
+        self._add_builtins(ArxLLVM.module)
+
+    def initialize(self):
         """
         Initialize LLVM Module And PassManager.
         """
         ArxLLVM.initialize()
 
+        logging.info("target_triple")
+        self.target = llvm.Target.from_default_triple()
+        self.target_machine = self.target.create_target_machine(
+            codemodel="small"
+        )
 
-import llvm
-import llvm.sys as sys
-from deps import ArxLLVM, Lexer, TreeAST
+        self.output_file = "tmp.o"
+        self.input_file = ""
 
+    def _add_builtins(self, module: llvm.ir.module.Module):
+        # The C++ tutorial adds putchard() simply by defining it in the host C++
+        # code, which is then accessible to the JIT. It doesn't work as simply
+        # for us; but luckily it's very easy to define new "C level" functions
+        # for our JITed code to use - just emit them as LLVM IR. This is what
+        # this method does.
 
-def compile_object(tree_ast: TreeAST) -> int:
-    """
-    Compile an AST to an object file.
+        # Add the declaration of putchar
+        putchar_ty = llvm.ir.FunctionType(
+            ArxLLVM.INT32_TYPE, [ArxLLVM.INT32_TYPE]
+        )
+        putchar = llvm.ir.Function(module, putchar_ty, "putchar")
 
-    Args:
-        tree_ast: The AST tree object.
+        # Add putchard
+        putchard_ty = llvm.ir.FunctionType(
+            ArxLLVM.FLOAT_TYPE, [ArxLLVM.FLOAT_TYPE]
+        )
+        putchard = llvm.ir.Function(module, putchard_ty, "putchard")
 
-    Returns:
-        int: The compilation result.
-    """
-    codegen = ASTToObjectVisitor(ASTToObjectVisitor())
+        irbuilder = llvm.ir.IRBuilder(putchard.append_basic_block("entry"))
 
-    Lexer.get_next_token()
+        ival = irbuilder.fptoui(
+            putchard.args[0], ArxLLVM.INT32_TYPE, "intcast"
+        )
 
-    codegen.initialize()
+        irbuilder.call(putchar, [ival])
+        irbuilder.ret(llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0))
 
-    # Run the main "interpreter loop" now.
-    LOG(INFO) << "Starting main_loop"
+    def evaluate(self, tree_ast: TreeAST) -> int:
+        """
+        Compile an AST to an object file.
 
-    codegen.main_loop(tree_ast)
+        Args:
+            tree_ast: The AST tree object.
 
-    LOG(INFO) << "target_triple"
+        Returns:
+            int: The compilation result.
+        """
 
-    target_triple = sys.getDefaultTargetTriple()
-    ArxLLVM.module.setTargetTriple(target_triple)
+        logging.info("Starting main_loop")
+        self.codegen.visit_tree(tree_ast)
 
-    Error = ""
-    Target = llvm.TargetRegistry.lookupTarget(target_triple, Error)
+        # Convert LLVM IR into in-memory representation
+        result_mod = llvm.parse_assembly(str(ArxLLVM.module))
+        result_object = self.target_machine.emit_object(result_mod)
 
-    # Print an error and exit if we couldn't find the requested target.
-    # This generally occurs if we've forgotten to initialize the
-    # TargetRegistry or we have a bogus target triple.
-    if not Target:
-        llvm.errs() << Error
-        return 1
+        if self.output_file == "":
+            self.output_file = self.input_file + ".o"
 
-    CPU = "generic"
-    Features = ""
+        # Output object code to a file.
+        with open(self.output_file, "wb") as obj_file:
+            obj_file.write(result_object)
+            print("Wrote " + self.output_file)
 
-    LOG(INFO) << "Target Options"
+        if IS_BUILD_LIB:
+            return 0
 
-    opt = llvm.TargetOptions()
-    reloc_model = llvm.Optional(llvm.Reloc.Model())
+        # generate an executable file
 
-    LOG(INFO) << "Target Machine"
-    the_target_machine = Target.createTargetMachine(
-        target_triple, CPU, Features, opt, reloc_model
-    )
+        linker_path = "clang++"
+        executable_path = self.input_file + "c"
+        # note: it just has a purpose to demonstrate an initial implementation
+        #       it will be improved in a follow-up PR
+        content = (
+            "#include <iostream>\n"
+            "int main() {\n"
+            '  std::cout << "ARX[WARNING]: '
+            'This is an empty executable file" << std::endl;\n'
+            "}\n"
+        )
 
-    LOG(INFO) << "Set Data Layout"
+        main_cpp_path = ArxFile.create_tmp_file(content)
 
-    ArxLLVM.module.setDataLayout(the_target_machine.createDataLayout())
+        if main_cpp_path == "":
+            llvm.errs() << "ARX[FAIL]: Executable file was not created."
+            return 1
 
-    LOG(INFO) << "dest output"
-    error_code = ""
+        # Example (running it from a shell prompt):
+        # clang++ \
+        #   ${CLANG_EXTRAS} \
+        #   ${DEBUG_FLAGS} \
+        #   -fPIC \
+        #   -std=c++20 \
+        #   "${TEST_DIR_PATH}/integration/${test_name}.cpp" \
+        #   ${OBJECT_FILE} \
+        #   -o "${TMP_DIR}/main"
 
-    if OUTPUT_FILE == "":
-        OUTPUT_FILE = INPUT_FILE + ".o"
+        compiler_args = [
+            "-fPIC",
+            "-std=c++20",
+            main_cpp_path,
+            self.output_file,
+            "-o",
+            executable_path,
+        ]
 
-    dest = llvm.raw_fd_ostream(OUTPUT_FILE, error_code, llvm.sys.fs.OF_None)
+        # Add any additional compiler flags or include paths as needed
+        # compiler_args.append("-I/path/to/include")
 
-    if error_code:
-        llvm.errs() << "Could not open file: " << error_code.message()
-        del the_target_machine
-        return 1
+        compiler_cmd = linker_path + " " + string_join(compiler_args, " ")
 
-    pass_manager = llvm.legacy.PassManager()
+        print("ARX[INFO]: ", compiler_cmd)
+        compile_result = system(compiler_cmd)
 
-    file_type = llvm.CGFT_ObjectFile
+        ArxFile.delete_file(main_cpp_path)
 
-    if the_target_machine.addPassesToEmitFile(
-        pass_manager, dest, None, file_type
-    ):
-        llvm.errs() << "the_target_machine can't emit a file of this type"
-        del the_target_machine
-        return 1
+        if compile_result != 0:
+            llvm.errs() << "failed to compile and link object file"
+            exit(1)
 
-    pass_manager.run(ArxLLVM.module)
-    dest.flush()
-
-    del the_target_machine
-
-    if IS_BUILD_LIB:
         return 0
 
-    # generate an executable file
+    def open_interactive(self) -> int:
+        """
+        Open the Arx shell.
 
-    linker_path = "clang++"
-    executable_path = INPUT_FILE + "c"
-    # note: it just has a purpose to demonstrate an initial implementation
-    #       it will be improved in a follow-up PR
-    content = (
-        "#include <iostream>\n"
-        "int main() {\n"
-        '  std::cout << "ARX[WARNING]: '
-        'This is an empty executable file" << std::endl;\n'
-        "}\n"
-    )
+        Returns:
+            int: The compilation result.
+        """
+        # Prime the first token.
+        print(f"Arx {ARX_VERSION} \n")
+        print(">>> ")
 
-    main_cpp_path = ArxFile.create_tmp_file(content)
-
-    if main_cpp_path == "":
-        llvm.errs() << "ARX[FAIL]: Executable file was not created."
-        return 1
-
-    # Example (running it from a shell prompt):
-    # clang++ \
-    #   ${CLANG_EXTRAS} \
-    #   ${DEBUG_FLAGS} \
-    #   -fPIC \
-    #   -std=c++20 \
-    #   "${TEST_DIR_PATH}/integration/${test_name}.cpp" \
-    #   ${OBJECT_FILE} \
-    #   -o "${TMP_DIR}/main"
-
-    compiler_args = [
-        "-fPIC",
-        "-std=c++20",
-        main_cpp_path,
-        OUTPUT_FILE,
-        "-o",
-        executable_path,
-    ]
-
-    # Add any additional compiler flags or include paths as needed
-    # compiler_args.append("-I/path/to/include")
-
-    compiler_cmd = linker_path + " " + string_join(compiler_args, " ")
-
-    print("ARX[INFO]: ", compiler_cmd)
-    compile_result = system(compiler_cmd)
-
-    ArxFile.delete_file(main_cpp_path)
-
-    if compile_result != 0:
-        llvm.errs() << "failed to compile and link object file"
-        exit(1)
-
-    return 0
-
-
-def open_shell_object() -> int:
-    """
-    Open the Arx shell.
-
-    Returns:
-        int: The compilation result.
-    """
-    # Prime the first token.
-    fprintf(stderr, "Arx %s \n", ARX_VERSION.c_str())
-    fprintf(stderr, ">>> ")
-
-    ast = TreeAST()
-
-    return compile_object(ast)
+        while True:
+            try:
+                code = input()
+                self.generate(Parser.parse())
+            except KeyboardInterrupt:
+                break

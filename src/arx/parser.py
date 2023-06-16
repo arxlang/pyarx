@@ -205,7 +205,6 @@ class Parser:
 
         Lexer.get_next_token()  # eat the if.
 
-        breakpoint()
         cond: Optional[ExprAST] = cls.parse_expression()
         if not cond:
             return None
