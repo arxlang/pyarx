@@ -4,7 +4,6 @@ from typing import Dict, Optional, Any
 
 import llvmlite.binding as llvm
 
-from arx.parser import PrototypeAST
 
 IS_BUILD_LIB: bool = False
 
@@ -21,7 +20,6 @@ class ArxLLVM:
     ir_builder: Optional[llvm.ir.builder.IRBuilder] = None
 
     named_values: Dict[str, Any] = {}  #  AllocaInst
-    function_protos: Dict[str, PrototypeAST] = {}
 
     FLOAT_TYPE: Optional[llvm.ir.types.Type] = None
     DOUBLE_TYPE: Optional[llvm.ir.types.Type] = None

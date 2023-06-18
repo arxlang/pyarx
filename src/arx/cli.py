@@ -1,7 +1,8 @@
 """Functions and classes for handling the CLI call."""
 import argparse
 
-from arx.main import ArxMain, __version__
+from arx import __version__
+from arx.main import ArxMain
 
 
 class CustomHelpFormatter(argparse.RawTextHelpFormatter):

@@ -20,7 +20,7 @@ repos:
     - id: mypy
       name: mypy
       entry: mypy
-      files: "src/arx/"
+      files: "src/arx"
       language: system
       pass_filenames: true
       types:
@@ -29,7 +29,7 @@ repos:
     - id: ruff
       name: ruff
       entry: ruff
-      files: "src/arx/"
+      files: "src/arx"
       language: system
       pass_filenames: true
       types:
@@ -61,7 +61,7 @@ repos:
     - id: vulture
       name: vulture
       entry: vulture --min-confidence=80
-      files: "src/arx/"
+      files: "src/arx"
       language: system
       description: Find unused Python code.
       pass_filenames: true
@@ -72,7 +72,7 @@ repos:
       name: mccabe
       entry: flake8 --max-complexity 15
       language: python
-      files: "src/arx/"
+      files: "src/arx"
       pass_filenames: true
       types:
         - python

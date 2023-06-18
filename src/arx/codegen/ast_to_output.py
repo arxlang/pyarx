@@ -2,7 +2,6 @@
 from arx.ast import (
     BinaryExprAST,
     CallExprAST,
-    ExprAST,
     FloatExprAST,
     ForExprAST,
     FunctionAST,
@@ -65,7 +64,7 @@ class ASTToOutputVisitor(Visitor):
             expr: The FloatExprAST node to visit.
         """
         print(
-            f"{self.indentation()}{self.get_annotation()}(Number {expr.val})"
+            f"{self.indentation()}{self.get_annotation()}(Number {expr.value})"
         )
 
     def visit_variable_expr(self, expr: VariableExprAST):
@@ -157,7 +156,7 @@ class ASTToOutputVisitor(Visitor):
         print(",")
         self.set_annotation("<THEN>")
 
-        expr.then.accept(self)
+        expr.then_.accept(self)
 
         if expr.else_:
             print(",")

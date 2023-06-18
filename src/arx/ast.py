@@ -1,6 +1,6 @@
 """AST classes and functions."""
 from enum import Enum
-from typing import List, Tuple, Type, Callable
+from typing import List, Tuple, Type, Callable, Dict, Optional, Any
 
 from arx.lexer import Lexer, SourceLocation
 
@@ -56,7 +56,7 @@ class ExprKind(Enum):
 class Visitor:
     """A base Visitor pattern class."""
 
-    def visit(self, expr: "ExprAST"):
+    def visit(self, expr: "ExprAST") -> Any:
         """Call the correspondent visit function for the given expr type."""
         map_visit_expr: Dict[Type[ExprAST], Callable] = {
             BinaryExprAST: self.visit_binary_expr,
@@ -79,46 +79,54 @@ class Visitor:
             print("Fail to downcasting ExprAST.")
             return
 
-        fn(expr)
+        return fn(expr)
 
-    def visit_binary_expr(self, expr: "BinaryExprAST"):
+    def visit_binary_expr(self, expr: "BinaryExprAST") -> Any:
+        """Visit method for binary expression."""
         raise Exception("Not implemented yet.")
 
-    def visit_call_expr(self, expr: "CallExprAST"):
+    def visit_call_expr(self, expr: "CallExprAST") -> Any:
+        """Visit method for function call."""
         raise Exception("Not implemented yet.")
 
-    def visit_float_expr(self, expr: "FloatExprAST"):
+    def visit_float_expr(self, expr: "FloatExprAST") -> Any:
+        """Visit method for float."""
         raise Exception("Not implemented yet.")
 
-    def visit_for_expr(self, expr: "ForExprAST"):
+    def visit_for_expr(self, expr: "ForExprAST") -> Any:
+        """Visit method for `for` loop."""
         raise Exception("Not implemented yet.")
 
-    def visit_function(self, expr: "FunctionAST"):
+    def visit_function(self, expr: "FunctionAST") -> Any:
+        """Visit method for function definition."""
         raise Exception("Not implemented yet.")
 
-    def visit_if_expr(self, expr: "IfExprAST"):
+    def visit_if_expr(self, expr: "IfExprAST") -> Any:
+        """Visit method for if statement."""
         raise Exception("Not implemented yet.")
 
-    def visit_prototype(self, expr: "PrototypeAST"):
+    def visit_prototype(self, expr: "PrototypeAST") -> Any:
+        """Visit method for prototype."""
         raise Exception("Not implemented yet.")
 
-    def visit_return_expr(self, expr: "ReturnExprAST"):
+    def visit_return_expr(self, expr: "ReturnExprAST") -> Any:
+        """Visit method for expression."""
         raise Exception("Not implemented yet.")
 
-    def visit_tree(self, expr: "TreeAST"):
+    def visit_tree(self, expr: "TreeAST") -> Any:
+        """Visit method for tree ast."""
         raise Exception("Not implemented yet.")
 
-    def visit_unary_expr(self, expr: "UnaryExprAST"):
+    def visit_unary_expr(self, expr: "UnaryExprAST") -> Any:
+        """Visit method for unary expression."""
         raise Exception("Not implemented yet.")
 
-    def visit_var_expr(self, expr: "VarExprAST"):
+    def visit_var_expr(self, expr: "VarExprAST") -> Any:
+        """Visit method for variable declaration."""
         raise Exception("Not implemented yet.")
 
-    def visit_variable_expr(self, expr: "VariableExprAST"):
-        raise Exception("Not implemented yet.")
-
-    def clean(self):
-        """Clean instance attributes."""
+    def visit_variable_expr(self, expr: "VariableExprAST") -> Any:
+        """Visit method for variable usage."""
         raise Exception("Not implemented yet.")
 
 
@@ -126,7 +134,7 @@ class ExprAST:
     """AST main expression class."""
 
     loc: SourceLocation
-    kind: "ExprAST"
+    kind: ExprKind
 
     def __init__(self, loc: SourceLocation = Lexer.cur_loc):
         """Initialize the ExprAST instance."""
@@ -184,14 +192,16 @@ class ExprAST:
 class FloatExprAST(ExprAST):
     """AST for the literal float number."""
 
+    value: float
+
     def __init__(self, val: float):
         """Initialize the FloatAST instance."""
         super().__init__()
-        self.val = val
+        self.value = val
         self.kind = ExprKind.FloatDTKind
 
     # def dump(self, out, ind: int):
-    #     return super().dump(out.write(str(self.val)), ind)
+    #     return super().dump(out.write(str(self.value)), ind)
 
 
 class VariableExprAST(ExprAST):
@@ -323,6 +333,10 @@ class ForExprAST(ExprAST):
 class VarExprAST(ExprAST):
     """AST class for variable declaration."""
 
+    var_names: List[Tuple[str, ExprAST]]
+    type_name: str
+    body: ExprAST
+
     def __init__(
         self,
         var_names: List[Tuple[str, ExprAST]],
@@ -373,7 +387,7 @@ class PrototypeAST(ExprAST):
 class ReturnExprAST(ExprAST):
     """AST class for function `return` statement."""
 
-    def __init__(self, expr: ExprAST):
+    def __init__(self, expr: Optional[ExprAST]):
         """Initialize the ReturnExprAST instance."""
         super().__init__()
         self.expr = expr

@@ -154,7 +154,7 @@ class ASTToLLVMIRVisitor(ObjectGeneratorVisitor):
             None
         """
         proto = expr.proto
-        ArxLLVM.function_protos[proto.get_name()] = expr.proto
+        self.function_protos[proto.get_name()] = expr.proto
         self.get_function(proto.get_name())
         fn = self.result_func
 
@@ -360,7 +360,7 @@ def compile_llvm_ir(ast: TreeAST) -> int:
         0,
     )
 
-    codegen.main_loop(ast)
+    codegen.visit_tree(ast)
 
     ArxLLVM.di_builder.finalize()
     ArxLLVM.module.print(llvm.errs(), None)

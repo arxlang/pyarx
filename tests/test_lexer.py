@@ -2,17 +2,19 @@
 import pytest
 
 from arx.io import ArxIO
-from arx.lexer import Lexer, Token
+from arx.lexer import Lexer, TokenKind, Token
 
 
 def test_token_name():
-    assert Lexer.get_tok_name(Token.tok_eof) == "eof"
-    assert Lexer.get_tok_name(Token.tok_function) == "function"
-    assert Lexer.get_tok_name(Token.tok_return) == "return"
-    assert Lexer.get_tok_name(Token.tok_identifier) == "identifier"
-    assert Lexer.get_tok_name(Token.tok_if) == "if"
-    assert Lexer.get_tok_name(Token.tok_for) == "for"
-    assert Lexer.get_tok_name("+") == "+"
+    assert Token(kind=TokenKind.eof, value="").get_name() == "eof"
+    assert Token(kind=TokenKind.kw_function, value="").get_name() == "function"
+    assert Token(kind=TokenKind.kw_return, value="").get_name() == "return"
+    assert (
+        Token(kind=TokenKind.identifier, value="").get_name() == "identifier"
+    )
+    assert Token(kind=TokenKind.kw_if, value="").get_name() == "if"
+    assert Token(kind=TokenKind.kw_for, value="").get_name() == "for"
+    assert Token(kind=TokenKind.operator, value="+").get_name() == "+"
 
 
 @pytest.mark.parametrize("value", ["123", "234", "345"])
@@ -25,30 +27,30 @@ def test_advance(value):
 
 def test_get_tok_simple():
     ArxIO.string_to_buffer("11")
-    assert Lexer.gettok() == Token.tok_float_literal
-    assert Lexer.num_float == 11
+    assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=11.0)
 
     ArxIO.string_to_buffer("21")
-    assert Lexer.gettok() == Token.tok_float_literal
-    assert Lexer.num_float == 21
+    assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=21.0)
 
     ArxIO.string_to_buffer("31")
-    assert Lexer.gettok() == Token.tok_float_literal
-    assert Lexer.num_float == 31
+    assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=31.0)
 
 
 def test_get_next_token_simple():
     ArxIO.string_to_buffer("11")
-    assert Lexer.get_next_token() == Token.tok_float_literal
-    assert Lexer.num_float == 11
+    assert Lexer.get_next_token() == Token(
+        kind=TokenKind.float_literal, value=11.0
+    )
 
     ArxIO.string_to_buffer("21")
-    assert Lexer.get_next_token() == Token.tok_float_literal
-    assert Lexer.num_float == 21
+    assert Lexer.get_next_token() == Token(
+        kind=TokenKind.float_literal, value=21.0
+    )
 
     ArxIO.string_to_buffer("31")
-    assert Lexer.get_next_token() == Token.tok_float_literal
-    assert Lexer.num_float == 31
+    assert Lexer.get_next_token() == Token(
+        kind=TokenKind.float_literal, value=31.0
+    )
 
 
 def test_get_tok():
@@ -65,26 +67,26 @@ def test_get_tok():
   """
     )
 
-    assert Lexer.gettok() == Token.tok_function
-    assert Lexer.gettok() == Token.tok_identifier
-    assert Lexer.gettok() == "("
-    assert Lexer.gettok() == Token.tok_identifier
-    assert Lexer.gettok() == ")"
-    assert Lexer.gettok() == ":"
-    assert Lexer.gettok() == Token.tok_if
-    assert Lexer.gettok() == Token.tok_identifier
-    assert Lexer.gettok() == ">"
-    assert Lexer.gettok() == Token.tok_float_literal
-    assert Lexer.gettok() == ":"
-    assert Lexer.gettok() == Token.tok_identifier
-    assert Lexer.gettok() == "+"
-    assert Lexer.gettok() == Token.tok_float_literal
-    assert Lexer.gettok() == Token.tok_else
-    assert Lexer.gettok() == ":"
-    assert Lexer.gettok() == Token.tok_identifier
-    assert Lexer.gettok() == "*"
-    assert Lexer.gettok() == Token.tok_float_literal
-    assert Lexer.gettok() == Token.tok_identifier
-    assert Lexer.gettok() == "("
-    assert Lexer.gettok() == Token.tok_float_literal
-    assert Lexer.gettok() == ")"
+    assert Lexer.gettok() == Token(kind=TokenKind.kw_function, value="fn")
+    assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="math")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value="(")
+    assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value=")")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value=":")
+    assert Lexer.gettok() == Token(kind=TokenKind.kw_if, value="if")
+    assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value=">")
+    assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=10.0)
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value=":")
+    assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value="+")
+    assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=1.0)
+    assert Lexer.gettok() == Token(kind=TokenKind.kw_else, value="else")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value=":")
+    assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value="*")
+    assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=20.0)
+    assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="math")
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value="(")
+    assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=1.0)
+    assert Lexer.gettok() == Token(kind=TokenKind.operator, value=")")

@@ -43,17 +43,17 @@ class ArxIO:
     buffer: ArxBuffer = ArxBuffer()
 
     @classmethod
-    def get_char(cls) -> int:
+    def get_char(cls) -> str:
         """
         Get a char from the buffer or from the default input.
 
         Returns
         -------
-        int
-            An integer representation of a char from the buffer.
+        str
+            A char from the buffer.
         """
         if cls.INPUT_FROM_STDIN:
-            return ord(sys.stdin.read(1))
+            return sys.stdin.read(1)
         return cls.buffer.read()
 
     @classmethod
@@ -67,7 +67,7 @@ class ArxIO:
             The name of the file to be copied to the buffer.
         """
         with open(filename, "r") as arxfile:
-            cls.buffer.clear()
+            cls.buffer.clean()
             for line in arxfile:
                 cls.buffer.write(line + "\n")
 

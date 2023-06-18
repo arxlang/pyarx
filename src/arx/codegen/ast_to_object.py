@@ -1,33 +1,19 @@
 import logging
 import os
 import sys
-from arx.parser import PrototypeAST, TreeAST
-from typing import List, Any
+from typing import List, Any, Dict
 
 from llvmlite import binding as llvm
 
-from arx.ast import (
-    BinaryExprAST,
-    CallExprAST,
-    ExprAST,
-    FloatExprAST,
-    ForExprAST,
-    FunctionAST,
-    IfExprAST,
-    PrototypeAST,
-    ReturnExprAST,
-    TreeAST,
-    UnaryExprAST,
-    VarExprAST,
-    VariableExprAST,
-    Visitor,
-)
+from arx import ast
+from arx.ast import Visitor
 
 from arx.codegen.base import CodeGenBase
 from arx.codegen.arx_llvm import ArxLLVM
 from arx.logs import LogErrorV
 from arx.io import ArxFile
 from arx.lexer import Lexer
+from arx.parser import Parser
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
@@ -57,178 +43,203 @@ IS_BUILD_LIB: bool = True
 
 
 class ObjectGeneratorVisitor(Visitor):
+    function_protos: Dict[str, ast.PrototypeAST]
+
     def __init__(self):
-        self.result_val: Value = None
-        self.result_func: Function = None
+        self.function_protos: Dict[str, ast.PrototypeAST] = {}
 
-    def visit_float_expr(self, expr: FloatExprAST):
+    def get_function(self, name: str):
         """
-        Code generation for FloatExprAST.
+        Put the function defined by the given name to result_func.
 
         Args:
-            expr: The FloatExprAST instance
+            name: Function name
         """
-        self.result_val = llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, expr.val)
+        if name in ArxLLVM.module.globals:
+            fn = ArxLLVM.module.get_global(name)
+            return fn
 
-    def visit_variable_expr(self, expr: VariableExprAST):
+        if name in self.function_protos:
+            return self.function_protos[name].accept(self)
+
+    def create_entry_block_alloca(
+        self, fn: llvm.ir.Function, var_name: str, type_name: str
+    ) -> Any:  # llvm.AllocaInst
         """
-        Code generation for VariableExprAST.
+        Create the Entry Block Allocation.
 
         Args:
-            expr: The VariableExprAST instance
+            fn: The llvm function
+            var_name: The variable name
+            type_name: The type name
+
+        Returns:
+            An llvm allocation instance.
+
+        create_entry_block_alloca - Create an alloca instruction in the entry
+        block of the function. This is used for mutable variables, etc.
+        """
+        tmp_builder = llvm.ir.IRBuilder()
+        tmp_builder.position_at_start(fn.entry_basic_block)
+        return tmp_builder.alloca(
+            ArxLLVM.get_data_type(type_name), None, var_name
+        )
+
+    def visit_tree(self, tree: ast.TreeAST) -> List[Any]:
+        """
+        The main loop that walks the AST.
+        top ::= definition | external | expression | ';'
+
+        Args:
+            tree: The ast.TreeAST instance.
+        """
+        result = []
+        for node in tree.nodes:
+            result.append(node.accept(self))
+        return result
+
+    def visit_float_expr(self, expr: ast.FloatExprAST) -> llvm.ir.Value:
+        """
+        Code generation for ast.FloatExprAST.
+
+        Args:
+            expr: The ast.FloatExprAST instance
+        """
+        return llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, expr.value)
+
+    def visit_variable_expr(self, expr: ast.VariableExprAST) -> llvm.ir.Value:
+        """
+        Code generation for ast.VariableExprAST.
+
+        Args:
+            expr: The ast.VariableExprAST instance
         """
         expr_var = ArxLLVM.named_values.get(expr.name)
 
         if not expr_var:
             msg = f"Unknown variable name: {expr.name}"
-            self.result_val = LogErrorV(msg)
+            LogErrorV(msg)
             return
 
-        self.result_val = ArxLLVM.ir_builder.load(expr_var, expr.name)
+        return ArxLLVM.ir_builder.load(expr_var, expr.name)
 
-    def visit_unary_expr(self, expr: UnaryExprAST):
+    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> llvm.ir.Value:
         """
-        Code generation for UnaryExprAST.
+        Code generation for ast.UnaryExprAST.
 
         Args:
-            expr: The UnaryExprAST instance
+            expr: The ast.UnaryExprAST instance
         """
-        expr.operand.accept(self)
-        operand_value = self.result_val
-
+        operand_value = expr.operand.accept(self)
         if not operand_value:
-            self.result_val = None
             return
 
-        self.get_function("unary" + expr.op_code)
-        fn = self.result_func
+        fn = self.get_function("unary" + expr.op_code)
         if not fn:
-            self.result_val = LogErrorV("Unknown unary operator")
+            LogErrorV("Unknown unary operator")
             return
 
-        self.result_val = ArxLLVM.ir_builder.CreateCall(
-            fn, operand_value, "unop"
-        )
+        return ArxLLVM.ir_builder.call(fn, operand_value, "unop")
 
-    def visit_binary_expr(self, expr: BinaryExprAST):
+    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> llvm.ir.Value:
         """
-        Code generation for BinaryExprAST.
+        Code generation for ast.BinaryExprAST.
 
         Args:
-            expr: The BinaryExprAST instance
+            expr: The ast.BinaryExprAST instance
         """
         if expr.op == "=":
             # Special case '=' because we don't want to emit the lhs as an expression.
             # Assignment requires the lhs to be an identifier.
             # This assumes we're building without RTTI because LLVM builds that way by default.
             # If you build LLVM with RTTI, this can be changed to a dynamic_cast for automatic error checking.
-            var_lhs = cast(VariableExprAST, expr.lhs)
+            var_lhs = expr.lhs
 
-            if not var_lhs:
-                self.result_val = LogErrorV(
-                    "destination of '=' must be a variable"
-                )
+            if not isinstance(var_lhs, ast.VariableExprAST):
+                LogErrorV("destination of '=' must be a variable")
                 return
 
             # Codegen the rhs.
-            expr.rhs.accept(self)
-            val = self.result_val
+            val = expr.rhs.accept(self)
 
             if not val:
-                self.result_val = None
                 return
 
             # Look up the name.
             variable = ArxLLVM.named_values[var_lhs.get_name()]
 
             if not variable:
-                self.result_val = LogErrorV("Unknown variable name")
+                LogErrorV("Unknown variable name")
                 return
 
-            ArxLLVM.ir_builder.CreateStore(val, variable)
-            self.result_val = val
+            ArxLLVM.ir_builder.store(val, variable)
+            return val
 
-        expr.lhs.accept(self)
-        llvm_val_lhs = self.result_val
-        expr.rhs.accept(self)
-        llvm_val_rhs = self.result_val
+        llvm_lhs = expr.lhs.accept(self)
+        llvm_rhs = expr.rhs.accept(self)
 
-        if not llvm_val_lhs or not llvm_val_rhs:
-            self.result_val = None
+        if not llvm_lhs or not llvm_rhs:
             return
 
         if expr.op == "+":
-            self.result_val = ArxLLVM.ir_builder.CreateFAdd(
-                llvm_val_lhs, llvm_val_rhs, "addtmp"
-            )
+            return ArxLLVM.ir_builder.fadd(llvm_lhs, llvm_rhs, "addtmp")
         elif expr.op == "-":
-            self.result_val = ArxLLVM.ir_builder.CreateFSub(
-                llvm_val_lhs, llvm_val_rhs, "subtmp"
-            )
+            return ArxLLVM.ir_builder.fsub(llvm_lhs, llvm_rhs, "subtmp")
         elif expr.op == "*":
-            self.result_val = ArxLLVM.ir_builder.CreateFMul(
-                llvm_val_lhs, llvm_val_rhs, "multmp"
-            )
+            return ArxLLVM.ir_builder.fmull(llvm_lhs, llvm_rhs, "multmp")
         elif expr.op == "<":
-            llvm_val_lhs = ArxLLVM.ir_builder.CreateFCmpULT(
-                llvm_val_lhs, llvm_val_rhs, "cmptmp"
-            )
+            cmp_result = ArxLLVM.fcmp_unordered("<", lhs, rhs, "lttmp")
             # Convert bool 0/1 to float 0.0 or 1.0
-            self.result_val = ArxLLVM.ir_builder.CreateUIToFP(
-                llvm_val_lhs, ArxLLVM.FLOAT_TYPE, "booltmp"
+            return ArxLLVM.ir_builder.uitofp(
+                cmp_result, ArxLLVM.FLOAT_TYPE, "booltmp"
             )
-        else:
-            # If it wasn't a builtin binary operator, it must be a user defined one. Emit a call to it.
-            self.get_function("binary" + expr.op)
-            fn = self.result_func
-            assert fn, "binary operator not found!"
+        elif expr.op == ">":
+            cmp_result = ArxLLVM.fcmp_unordered(">", lhs, rhs, "gttmp")
+            # Convert bool 0/1 to float 0.0 or 1.0
+            return ArxLLVM.ir_builder.uitofp(
+                cmp_result, ArxLLVM.FLOAT_TYPE, "booltmp"
+            )
 
-            Ops = [llvm_val_lhs, llvm_val_rhs]
-            self.result_val = ArxLLVM.ir_builder.CreateCall(fn, Ops, "binop")
+        # If it wasn't a builtin binary operator, it must be a user defined one. Emit a call to it.
+        fn = self.get_function("binary" + expr.op)
+        return ArxLLVM.ir_builder.call(fn, [llvm_lhs, llvm_rhs], "binop")
 
-    def visit_call_expr(self, expr: CallExprAST):
+    def visit_call_expr(self, expr: ast.CallExprAST) -> llvm.ir.Value:
         """
-        Code generation for CallExprAST.
+        Code generation for ast.CallExprAST.
 
         Args:
-            expr: The CallExprAST instance
+            expr: The ast.CallExprAST instance
         """
-        self.get_function(expr.callee)
-        callee_f = self.result_func
+        callee_f = self.get_function(expr.callee)
 
         if not callee_f:
-            self.result_val = LogErrorV("Unknown function referenced")
+            LogErrorV("Unknown function referenced")
             return
 
         if callee_f.arg_size() != len(expr.args):
-            self.result_val = LogErrorV("Incorrect # arguments passed")
+            LogErrorV("Incorrect # arguments passed")
             return
 
         args_v = []
         for arg in expr.args:
-            arg.accept(self)
-            args_v_item = self.result_val
-            args_v.append(args_v_item)
+            args_v_item = arg.accept(self)
             if not args_v_item:
-                self.result_val = None
                 return
+            args_v.append(args_v_item)
 
-        self.result_val = ArxLLVM.ir_builder.CreateCall(
-            callee_f, args_v, "calltmp"
-        )
+        return ArxLLVM.ir_builder.call(callee_f, args_v, "calltmp")
 
-    def visit_ir_expr(self, expr: IfExprAST):
+    def visit_if_expr(self, expr: ast.IfExprAST) -> llvm.ir.Value:
         """
-        Code generation for IfExprAST.
+        Code generation for ast.IfExprAST.
 
         Args:
-            expr: The IfExprAST instance
+            expr: The ast.IfExprAST instance
         """
-        expr.cond.accept(self)
-        cond_v = self.result_val
+        cond_v = expr.cond.accept(self)
 
         if not cond_v:
-            self.result_val = None
             return
 
         # Convert condition to a bool by comparing non-equal to 0.0.
@@ -251,10 +262,9 @@ class ObjectGeneratorVisitor(Visitor):
         # Emit then value.
         ArxLLVM.ir_builder.SetInsertPoint(then_bb)
 
-        expr.then.accept(self)
-        then_v = self.result_val
+        then_v = expr.then.accept(self)
+
         if not then_v:
-            self.result_val = None
             return
 
         ArxLLVM.ir_builder.CreateBr(merge_bb)
@@ -265,10 +275,8 @@ class ObjectGeneratorVisitor(Visitor):
         fn.getBasicBlockList().push_back(else_bb)
         ArxLLVM.ir_builder.SetInsertPoint(else_bb)
 
-        expr.else_.accept(self)
-        else_v = self.result_val
+        else_v = expr.else_.accept(self)
         if not else_v:
-            self.result_val = None
             return
 
         ArxLLVM.ir_builder.CreateBr(merge_bb)
@@ -283,15 +291,14 @@ class ObjectGeneratorVisitor(Visitor):
         pn.addIncoming(then_v, then_bb)
         pn.addIncoming(else_v, else_bb)
 
-        self.result_val = pn
-        return
+        return pn
 
-    def visit_for_expr(self, expr: ForExprAST):
+    def visit_for_expr(self, expr: ast.ForExprAST) -> llvm.ir.Value:
         """
-        Code generation for ForExprAST.
+        Code generation for ast.ForExprAST.
 
         Args:
-            expr: The ForExprAST instance.
+            expr: The ast.ForExprAST instance.
         """
         fn = ArxLLVM.ir_builder.GetInsertBlock().getParent()
 
@@ -300,10 +307,8 @@ class ObjectGeneratorVisitor(Visitor):
         alloca = self.create_entry_block_alloca(fn, expr.var_name, "float")
 
         # Emit the start code first, without 'variable' in scope.
-        expr.start.accept(self)
-        start_val = self.result_val
+        start_val = expr.start.accept(self)
         if not start_val:
-            self.result_val = None
             return
 
         # Store the value into the alloca.
@@ -328,30 +333,24 @@ class ObjectGeneratorVisitor(Visitor):
         # Emit the body of the loop. This, like any other expr, can change
         # the current basic_block. Note that we ignore the value computed by the
         # body, but don't allow an error.
-        expr.body.accept(self)
-        body_val = self.result_val
+        body_val = expr.body.accept(self)
 
         if not body_val:
-            self.result_val = None
             return
 
         # Emit the step value.
         step_val = None
         if expr.step:
-            expr.step.accept(self)
-            step_val = self.result_val
+            step_val = expr.step.accept(self)
             if not step_val:
-                self.result_val = None
                 return
         else:
             # If not specified, use 1.0.
             step_val = llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 1.0)
 
         # Compute the end condition.
-        expr.end.accept(self)
-        end_cond = self.result_val
+        end_cond = expr.end.accept(self)
         if not end_cond:
-            self.result_val = None
             return
 
         # Reload, increment, and restore the alloca. This handles the case
@@ -385,14 +384,14 @@ class ObjectGeneratorVisitor(Visitor):
             ArxLLVM.named_values.pop(expr.var_name, None)
 
         # for expr always returns 0.0.
-        self.result_val = llvm.ir.Constant.getNullValue(ArxLLVM.FLOAT_TYPE)
+        return llvm.ir.Constant.getNullValue(ArxLLVM.FLOAT_TYPE)
 
-    def visit_var_expr(self, expr: VarExprAST):
+    def visit_var_expr(self, expr: ast.VarExprAST) -> llvm.ir.Value:
         """
-        Code generation for VarExprAST.
+        Code generation for ast.VarExprAST.
 
         Args:
-            expr: The VarExprAST instance.
+            expr: The ast.VarExprAST instance.
         """
         old_bindings: List[llvm.AllocaInst] = []
 
@@ -406,12 +405,10 @@ class ObjectGeneratorVisitor(Visitor):
             #  var a = 1 in
             #    var a = a in ...   # refers to outer 'a'.
 
-            init_val: llvm.Value
+            init_val: llvm.ir.Value
             if init:
-                init.accept(self)
-                init_val = self.result_val
+                init_val = init.accept(self)
                 if not init_val:
-                    self.result_val = None
                     return
             else:  # If not specified, use 0.0.
                 init_val = llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0.0)
@@ -428,10 +425,8 @@ class ObjectGeneratorVisitor(Visitor):
             ArxLLVM.named_values[var_name] = alloca
 
         # Codegen the body, now that all vars are in scope.
-        expr.body.accept(self)
-        body_val = self.result_val
+        body_val = expr.body.accept(self)
         if not body_val:
-            self.result_val = None
             return
 
         # Pop all our variables from scope.
@@ -439,14 +434,14 @@ class ObjectGeneratorVisitor(Visitor):
             ArxLLVM.named_values[var_name] = old_bindings[i]
 
         # Return the body computation.
-        self.result_val = body_val
+        return body_val
 
-    def visit_prototype(self, expr: PrototypeAST):
+    def visit_prototype(self, expr: ast.PrototypeAST) -> llvm.ir.Function:
         """
         Code generation for PrototypeExprAST.
 
         Args:
-            expr: The PrototypeAST instance.
+            expr: The ast.PrototypeAST instance.
         """
         args_type = [ArxLLVM.FLOAT_TYPE] * len(expr.args)
         return_type = ArxLLVM.get_data_type("float")
@@ -461,9 +456,9 @@ class ObjectGeneratorVisitor(Visitor):
             arg.name = expr.args[idx].name
             idx += 1
 
-        self.result_func = fn
+        return fn
 
-    def visit_function(self, expr: FunctionAST):
+    def visit_function(self, expr: ast.FunctionAST) -> llvm.ir.Function:
         """
         Code generation for FunctionExprAST.
 
@@ -471,15 +466,13 @@ class ObjectGeneratorVisitor(Visitor):
         but keep a reference to it for use below.
 
         Args:
-            expr: The FunctionAST instance.
+            expr: The ast.FunctionAST instance.
         """
         proto = expr.proto
-        ArxLLVM.function_protos[expr.proto.get_name()] = expr.proto
-        self.get_function(proto.get_name())
-        fn = self.result_func
+        self.function_protos[expr.proto.get_name()] = expr.proto
+        fn = self.get_function(proto.get_name())
 
         if not fn:
-            self.result_func = None
             return
 
         # Create a new basic block to start insertion into.
@@ -488,94 +481,42 @@ class ObjectGeneratorVisitor(Visitor):
         # Record the function arguments in the named_values map.
         ArxLLVM.named_values.clear()
 
-        builder = llvm.ir.IRBuilder(basic_block)
+        self.ir_builder = llvm.ir.IRBuilder(basic_block)
 
         for llvm_arg in fn.args:
             # Create an alloca for this variable.
-            alloca = builder.alloca(ArxLLVM.FLOAT_TYPE, llvm_arg._get_name())
+            alloca = self.ir_builder.alloca(
+                ArxLLVM.FLOAT_TYPE, llvm_arg._get_name()
+            )
 
             # Store the initial value into the alloca.
-            builder.store(llvm_arg, alloca)
+            self.ir_builder.store(llvm_arg, alloca)
 
             # Add arguments to variable symbol table.
             ArxLLVM.named_values[str(llvm_arg._get_name())] = alloca
 
-        expr.body.accept(self)
+        retval = expr.body.accept(self)
 
         # Validate the generated code, checking for consistency.
-        self.result_func = fn
-        if self.result_val:
-            builder.ret(self.result_val)
-            return
-        builder.ret(llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0))
+        if retval:
+            self.ir_builder.ret(retval)
 
-    def visit_return_expr(self, expr: ReturnExprAST):
+        else:
+            self.ir_builder.ret(llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0))
+        return fn
+
+    def visit_return_expr(self, expr: ast.ReturnExprAST) -> llvm.ir.Value:
         """
-        Code generation for ReturnExprAST.
+        Code generation for ast.ReturnExprAST.
 
         Args:
-            expr: The ReturnExprAST instance.
+            expr: The ast.ReturnExprAST instance.
         """
-        llvm_return_val = self.result_val
-
-        if llvm_return_val:
-            ArxLLVM.ir_builder.CreateRet(llvm_return_val)
-
-    def clean(self):
-        """
-        Set to None result_val and result_func in order to avoid trash.
-        """
-        self.result_val = None
-        self.result_func = None
-
-    def get_function(self, name: str):
-        """
-        Put the function defined by the given name to result_func.
-
-        Args:
-            name: Function name
-        """
-        if name in ArxLLVM.module.globals:
-            fn = ArxLLVM.module.get_global(name)
-            self.result_func = fn
-            return
-
-        if name in ArxLLVM.function_protos:
-            ArxLLVM.function_protos[name].accept(self)
-
-    def create_entry_block_alloca(
-        self, fn: llvm.ir.Function, var_name: str, type_name: str
-    ) -> Any:  # llvm.AllocaInst
-        """
-        Create the Entry Block Allocation.
-
-        Args:
-            fn: The llvm function
-            var_name: The variable name
-            type_name: The type name
-
-        Returns:
-            An llvm allocation instance.
-
-        create_entry_block_alloca - Create an alloca instruction in the entry
-        block of the function. This is used for mutable variables, etc.
-        """
-        tmp_builder = llvm.ir.IRBuilder()
-        tmp_builder.position_at_start(fn.entry_basic_block)
-        return tmp_builder.alloca(
-            ArxLLVM.get_data_type(type_name), None, var_name
-        )
-
-    def visit_tree(self, ast: TreeAST):
-        """
-        The main loop that walks the AST.
-        top ::= definition | external | expression | ';'
-
-        Args:
-            ast: The TreeAST instance.
-        """
-        for node in ast.nodes:
-            node.accept(self)
+        # llvm_return_val = self.result_val
+        #
+        # if llvm_return_val:
+        #     ArxLLVM.ir_builder.CreateRet(llvm_return_val)
+        return
 
 
 class ObjectGenerator(CodeGenBase):
@@ -632,7 +573,7 @@ class ObjectGenerator(CodeGenBase):
         irbuilder.call(putchar, [ival])
         irbuilder.ret(llvm.ir.Constant(ArxLLVM.FLOAT_TYPE, 0))
 
-    def evaluate(self, tree_ast: TreeAST) -> int:
+    def evaluate(self, tree_ast: ast.TreeAST) -> int:
         """
         Compile an AST to an object file.
 

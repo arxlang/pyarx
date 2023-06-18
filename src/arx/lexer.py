@@ -1,5 +1,7 @@
 """Module for handling the lexer analysis."""
-from typing import Union
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Dict
 
 from arx.io import ArxIO
 
@@ -23,95 +25,115 @@ class SourceLocation:
         self.col = col
 
 
-class Token:
-    """
-    Token enumeration for known variables returned by the lexer.
+class TokenKind(Enum):
+    """TokenKind enumeration for known variables returned by the lexer."""
 
-    Attributes
-    ----------
-    tok_eof : int
-        End-of-file token.
-    tok_function : int
-        Function token.
-    tok_extern : int
-        Extern token.
-    tok_return : int
-        Return token.
-    tok_identifier : int
-        Identifier token.
-    tok_float_literal : int
-        Float literal token.
-    tok_if : int
-        If token.
-    tok_then : int
-        Then token.
-    tok_else : int
-        Else token.
-    tok_for : int
-        For token.
-    tok_in : int
-        In token.
-    tok_binary : int
-        Binary operator token.
-    tok_unary : int
-        Unary operator token.
-    tok_var : int
-        Variable definition token.
-    tok_const : int
-        Constant token.
-    tok_not_initialized : int
-        Not initialized token.
-    """
+    eof: int = -1
 
-    tok_eof: int = -1
-    tok_function: int = -2
-    tok_extern: int = -3
-    tok_return: int = -4
-    tok_identifier: int = -10
-    tok_float_literal: int = -11
-    tok_if: int = -20
-    tok_then: int = -21
-    tok_else: int = -22
-    tok_for: int = -23
-    tok_in: int = -24
-    tok_binary: int = -30
-    tok_unary: int = -31
-    tok_var: int = -40
-    tok_const: int = -41
-    tok_not_initialized: int = -9999
+    # function
+    kw_function: int = -2
+    kw_extern: int = -3
+    kw_return: int = -4
+
+    # data types
+    identifier: int = -10
+    float_literal: int = -11
+
+    # control flow
+    kw_if: int = -20
+    kw_then: int = -21
+    kw_else: int = -22
+    kw_for: int = -23
+    kw_in: int = -24
+
+    # operators
+    binary_op: int = -30
+    unary_op: int = -31
+    operator: int = -32
+
+    # variables
+    kw_var: int = -40
+    kw_const: int = -41
+
+    # generic control
+    not_initialized: int = -9999
 
 
 MAP_NAME_TO_KW_TOKEN = {
-    "fn": Token.tok_function,
-    "return": Token.tok_return,
-    "extern": Token.tok_extern,
-    "if": Token.tok_if,
-    "else": Token.tok_else,
-    "for": Token.tok_for,
-    "in": Token.tok_in,
-    "binary": Token.tok_binary,
-    "unary": Token.tok_unary,
-    "var": Token.tok_var,
+    "fn": TokenKind.kw_function,
+    "return": TokenKind.kw_return,
+    "extern": TokenKind.kw_extern,
+    "if": TokenKind.kw_if,
+    "else": TokenKind.kw_else,
+    "for": TokenKind.kw_for,
+    "in": TokenKind.kw_in,
+    "binary": TokenKind.binary_op,
+    "unary": TokenKind.unary_op,
+    "var": TokenKind.kw_var,
+    "operator": TokenKind.operator,
 }
 
 
-MAP_KW_TOKEN_TO_NAME = {
-    Token.tok_eof: "eof",
-    Token.tok_function: "function",
-    Token.tok_return: "return",
-    Token.tok_extern: "extern",
-    Token.tok_identifier: "identifier",
-    Token.tok_float_literal: "float",
-    Token.tok_if: "if",
-    Token.tok_then: "then",
-    Token.tok_else: "else",
-    Token.tok_for: "for",
-    Token.tok_in: "in",
-    Token.tok_binary: "binary",
-    Token.tok_unary: "unary",
-    Token.tok_var: "var",
-    Token.tok_const: "const",
+MAP_KW_TOKEN_TO_NAME: Dict[TokenKind, str] = {
+    TokenKind.eof: "eof",
+    TokenKind.kw_function: "function",
+    TokenKind.kw_return: "return",
+    TokenKind.kw_extern: "extern",
+    TokenKind.identifier: "identifier",
+    TokenKind.float_literal: "float",
+    TokenKind.kw_if: "if",
+    TokenKind.kw_then: "then",
+    TokenKind.kw_else: "else",
+    TokenKind.kw_for: "for",
+    TokenKind.kw_in: "in",
+    # TokenKind.kw_binary_op: "binary",
+    # TokenKind.kw_unary_op: "unary",
+    TokenKind.kw_var: "var",
+    TokenKind.kw_const: "const",
 }
+
+
+@dataclass
+class Token:
+    """Token class store the kind and the value of the token."""
+
+    kind: TokenKind
+    value: Any
+
+    def get_name(self) -> str:
+        """
+        Get the name of the specified token.
+
+        Parameters
+        ----------
+        tok : int
+            TokenKind value.
+
+        Returns
+        -------
+        str
+            Name of the token.
+        """
+        return MAP_KW_TOKEN_TO_NAME.get(self.kind, str(self.value))
+
+    def get_display_value(self) -> str:
+        """
+        Return the string representation of a token value.
+
+        Returns
+        -------
+            str: The string representation of the token value.
+        """
+        if self.kind == TokenKind.identifier:
+            return "(" + self.value + ")"
+        elif self.kind == TokenKind.float_literal:
+            return "(" + str(self.value) + ")"
+        else:
+            return ""
+
+    def __str__(self):
+        """Display the token in a readable way."""
+        return f"{self.get_name()}{self.get_display_value()}"
 
 
 class Lexer:
@@ -122,10 +144,6 @@ class Lexer:
     ----------
     cur_loc : SourceLocation
         Current source location.
-    identifier_str : str
-        Filled in if tok_identifier.
-    num_float : float
-        Filled in if tok_float_literal.
     cur_tok : int
         Current token.
     lex_loc : SourceLocation
@@ -133,31 +151,24 @@ class Lexer:
     """
 
     cur_loc: SourceLocation = SourceLocation(0, 0)
-    identifier_str: str = ""
-    num_float: float = 0
-    cur_tok: int = 0
+    cur_tok: Token
     lex_loc: SourceLocation = SourceLocation(0, 0)
     last_char: str = ""
 
-    @classmethod
-    def get_tok_name(cls, tok: Union[int, str]) -> Union[str, int]:
-        """
-        Get the name of the specified token.
-
-        Parameters
-        ----------
-        tok : int
-            Token value.
-
-        Returns
-        -------
-        str
-            Name of the token.
-        """
-        return MAP_KW_TOKEN_TO_NAME.get(tok) or tok
+    _keyword_map = {
+        "fn": TokenKind.kw_function,
+        "extern": TokenKind.kw_extern,
+        "if": TokenKind.kw_if,
+        "then": TokenKind.kw_then,
+        "else": TokenKind.kw_else,
+        "for": TokenKind.kw_for,
+        "in": TokenKind.kw_in,
+        "var": TokenKind.kw_var,
+        "const": TokenKind.kw_const,
+    }
 
     @classmethod
-    def gettok(cls) -> int:
+    def gettok(cls) -> Token:
         """
         Get the next token.
 
@@ -177,16 +188,19 @@ class Lexer:
 
         if cls.last_char.isalpha() or cls.last_char == "_":
             # Identifier
-            Lexer.identifier_str = cls.last_char
+            identifier = cls.last_char
             cls.last_char = cls.advance()
 
             while cls.last_char.isalnum() or cls.last_char == "_":
-                Lexer.identifier_str += cls.last_char
+                identifier += cls.last_char
                 cls.last_char = cls.advance()
 
-            return MAP_NAME_TO_KW_TOKEN.get(
-                Lexer.identifier_str, Token.tok_identifier
-            )
+            if identifier in cls._keyword_map:
+                return Token(
+                    kind=cls._keyword_map[identifier], value=identifier
+                )
+
+            return Token(kind=TokenKind.identifier, value=identifier)
 
         # Number: [0-9.]+
         if cls.last_char.isdigit() or cls.last_char == ".":
@@ -195,8 +209,7 @@ class Lexer:
                 num_str += cls.last_char
                 cls.last_char = cls.advance()
 
-            Lexer.num_float = float(num_str)
-            return Token.tok_float_literal
+            return Token(kind=TokenKind.float_literal, value=float(num_str))
 
         # Comment until end of line.
         if cls.last_char == "#":
@@ -211,12 +224,11 @@ class Lexer:
                 return cls.gettok()
 
         # Check for end of file. Don't eat the EOF.
-        if cls.last_char == EOF:
-            return Token.tok_eof
-
-        this_char = cls.last_char
-        cls.last_char = cls.advance()
-        return this_char
+        if cls.last_char:
+            this_char = cls.last_char
+            cls.last_char = cls.advance()
+            return Token(kind=TokenKind.operator, value=this_char)
+        return Token(kind=TokenKind.eof, value="")
 
     @classmethod
     def advance(cls) -> str:
@@ -226,7 +238,7 @@ class Lexer:
         Returns
         -------
         int
-            Token in integer form.
+            TokenKind in integer form.
         """
         last_char = ArxIO.get_char()
 
@@ -239,7 +251,7 @@ class Lexer:
         return last_char
 
     @classmethod
-    def get_next_token(cls) -> int:
+    def get_next_token(cls) -> Token:
         """
         Provide a simple token buffer.
 
@@ -252,23 +264,3 @@ class Lexer:
         """
         Lexer.cur_tok = cls.gettok()
         return Lexer.cur_tok
-
-
-def get_token_value(tok: int) -> str:
-    """
-    Return the string representation of a token value.
-
-    Parameters
-    ----------
-        tok (int): The token value.
-
-    Returns
-    -------
-        str: The string representation of the token value.
-    """
-    if tok == Token.tok_identifier:
-        return "(" + Lexer.identifier_str + ")"
-    elif tok == Token.tok_float_literal:
-        return "(" + str(Lexer.num_float) + ")"
-    else:
-        return ""
