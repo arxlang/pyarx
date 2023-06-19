@@ -8,7 +8,7 @@ from arx import ast
 class CodeGenBase:
     """A base Visitor pattern class."""
 
-    def visit(self, expr: "ExprAST") -> Any:
+    def visit(self, expr: ast.ExprAST) -> Any:
         """Call the correspondent visit function for the given expr type."""
         map_visit_expr: Dict[Type[ast.ExprAST], Callable] = {
             ast.BinaryExprAST: self.visit_binary_expr,
@@ -125,7 +125,7 @@ class VariablesLLVM:
 class CodeGenLLVMBase(CodeGenBase):
     """ArxLLVM gathers all the main global variables for LLVM workflow."""
 
-    named_values: Dict[str, Any] = {}  #  AllocaInst
+    named_values: Dict[str, Any] = {}  # AllocaInst
     _llvm: VariablesLLVM
 
     def initialize(self):

@@ -1,6 +1,6 @@
 """AST classes and functions."""
 from enum import Enum
-from typing import List, Tuple, Type, Callable, Dict, Optional, Any
+from typing import List, Tuple, Optional
 
 from arx.lexer import Lexer, SourceLocation
 

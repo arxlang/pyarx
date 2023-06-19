@@ -2,7 +2,7 @@
 from typing import Dict, List, Optional, Tuple
 
 from arx import ast
-from arx.lexer import Lexer, SourceLocation, TokenKind, Token, Any
+from arx.lexer import Lexer, SourceLocation, TokenKind, Token
 from arx.logs import LogError
 
 

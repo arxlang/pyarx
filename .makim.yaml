@@ -34,13 +34,17 @@ groups:
         help: run smoke tests
         run: |
           input_files = [
-            'constant.arx',
-            'average.arx',
-            'fibonacci.arx',
-            'print-start.arx',
-            'sum.arx',
+            'constant',
+            'average',
+            'fibonacci',
+            'print-star',
+            'sum',
           ]
           for filename in input_files:
+            print("=" * 80)
+            print(filename)
+            print("=" * 80)
+
             arx --help
             arx --version
             arx --show-ast --input-file examples/@(filename).arx
