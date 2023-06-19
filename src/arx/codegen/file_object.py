@@ -108,7 +108,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             self.compile_executable(self)
 
     def compile_executable(self):
-        raise Exception("Not fully implemented yet.")
+        print("Not fully implemented yet.")
         # generate an executable file
 
         linker_path = "clang++"
@@ -457,7 +457,6 @@ class ObjectGenerator(CodeGenLLVMBase):
         start_val = self.visit(expr.start)
         if not start_val:
             raise Exception("codegen: Invalid start argument.")
-            return
 
         # Store the value into the alloca.
         self._llvm.ir_builder.store(start_val, var_addr)
