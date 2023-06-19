@@ -1,24 +1,11 @@
 """Set of classes and functions to emit the AST from a given source code."""
-from arx.ast import (
-    BinaryExprAST,
-    CallExprAST,
-    FloatExprAST,
-    ForExprAST,
-    FunctionAST,
-    IfExprAST,
-    PrototypeAST,
-    ReturnExprAST,
-    TreeAST,
-    UnaryExprAST,
-    VarExprAST,
-    VariableExprAST,
-    Visitor,
-)
+from arx.codegen.base import CodeGenBase
+from arx import ast
 
 INDENT_SIZE = 2
 
 
-class ASTToOutputVisitor(Visitor):
+class ASTtoOutput(CodeGenBase):
     """Show the AST for the given source code."""
 
     def __init__(self):
@@ -56,57 +43,57 @@ class ASTToOutputVisitor(Visitor):
         self.annotation = ""
         return annotation
 
-    def visit_float_expr(self, expr: FloatExprAST):
+    def visit_float_expr(self, expr: ast.FloatExprAST):
         """
-        Visit a FloatExprAST node.
+        Visit a ast.FloatExprAST node.
 
         Args:
-            expr: The FloatExprAST node to visit.
+            expr: The ast.FloatExprAST node to visit.
         """
         print(
             f"{self.indentation()}{self.get_annotation()}(Number {expr.value})"
         )
 
-    def visit_variable_expr(self, expr: VariableExprAST):
+    def visit_variable_expr(self, expr: ast.VariableExprAST):
         """
-        Visit a VariableExprAST node.
+        Visit a ast.VariableExprAST node.
 
         Args:
-            expr: The VariableExprAST node to visit.
+            expr: The ast.VariableExprAST node to visit.
         """
         print(
             f"{self.indentation()}{self.get_annotation()}"
-            f"(VariableExprAST {expr.name})"
+            f"(ast.VariableExprAST {expr.name})"
         )
 
-    def visit_unary_expr(self, expr: UnaryExprAST):
+    def visit_unary_expr(self, expr: ast.UnaryExprAST):
         """
-        Visit a UnaryExprAST node.
+        Visit a ast.UnaryExprAST node.
 
         Args:
-            expr: The UnaryExprAST node to visit.
+            expr: The ast.UnaryExprAST node to visit.
         """
-        print("(UnaryExprAST)")
+        print("(ast.UnaryExprAST)")
 
-    def visit_binary_expr(self, expr: BinaryExprAST):
+    def visit_binary_expr(self, expr: ast.BinaryExprAST):
         """
-        Visit a BinaryExprAST node.
+        Visit a ast.BinaryExprAST node.
 
         Args:
-            expr: The BinaryExprAST node to visit.
+            expr: The ast.BinaryExprAST node to visit.
         """
         print(f"{self.indentation()}{self.get_annotation()}(")
         self.indent += INDENT_SIZE
 
-        print(f"{self.indentation()}BinaryExprAST (")
+        print(f"{self.indentation()}ast.BinaryExprAST (")
         self.indent += INDENT_SIZE
 
-        expr.lhs.accept(self)
+        self.visit(expr.lhs)
         print(", ")
 
         print(f"{self.indentation()}(OP {expr.op}),")
 
-        expr.rhs.accept(self)
+        self.visit(expr.rhs)
         print(self.indentation())
 
         self.indent -= INDENT_SIZE
@@ -115,21 +102,21 @@ class ASTToOutputVisitor(Visitor):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_call_expr(self, expr: CallExprAST):
+    def visit_call_expr(self, expr: ast.CallExprAST):
         """
-        Visit a CallExprAST node.
+        Visit a ast.CallExprAST node.
 
         Args:
-            expr: The CallExprAST node to visit.
+            expr: The ast.CallExprAST node to visit.
         """
         print(f"{self.indentation()}{self.get_annotation()}(")
         self.indent += INDENT_SIZE
 
-        print(f"{self.indentation()}CallExprAST {expr.callee}(")
+        print(f"{self.indentation()}ast.CallExprAST {expr.callee}(")
         self.indent += INDENT_SIZE
 
         for node in expr.args:
-            node.accept(self)
+            self.visit(node)
             print()
 
         self.indent -= INDENT_SIZE
@@ -138,30 +125,30 @@ class ASTToOutputVisitor(Visitor):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_if_expr(self, expr: IfExprAST):
+    def visit_if_expr(self, expr: ast.IfExprAST):
         """
-        Visit an IfExprAST node.
+        Visit an ast.IfExprAST node.
 
         Args:
-            expr: The IfExprAST node to visit.
+            expr: The ast.IfExprAST node to visit.
         """
         print(f"{self.indentation()}(")
         self.indent += INDENT_SIZE
 
-        print(f"{self.indentation()}IfExprAST (")
+        print(f"{self.indentation()}ast.IfExprAST (")
         self.indent += INDENT_SIZE
         self.set_annotation("<COND>")
 
-        expr.cond.accept(self)
+        self.visit(expr.cond)
         print(",")
         self.set_annotation("<THEN>")
 
-        expr.then_.accept(self)
+        self.visit(expr.then_)
 
         if expr.else_:
             print(",")
             self.set_annotation("<ELSE>")
-            expr.else_.accept(self)
+            self.visit(expr.else_)
             print()
         else:
             print()
@@ -173,33 +160,33 @@ class ASTToOutputVisitor(Visitor):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_for_expr(self, expr: ForExprAST):
+    def visit_for_expr(self, expr: ast.ForExprAST):
         """
-        Visit a ForExprAST node.
+        Visit a ast.ForExprAST node.
 
         Args:
-            expr: The ForExprAST node to visit.
+            expr: The ast.ForExprAST node to visit.
         """
         print(f"{self.indentation()}{self.get_annotation()}(")
         self.indent += INDENT_SIZE
 
-        print(f"{self.indentation()}ForExprAST (")
+        print(f"{self.indentation()}ast.ForExprAST (")
         self.indent += INDENT_SIZE
 
         self.set_annotation("<START>")
-        expr.start.accept(self)
+        self.visit(expr.start)
         print(", ")
 
         self.set_annotation("<END>")
-        expr.end.accept(self)
+        self.visit(expr.end)
         print(", ")
 
         self.set_annotation("<STEP>")
-        expr.step.accept(self)
+        self.visit(expr.step)
         print(", ")
 
         self.set_annotation("<BODY>")
-        expr.body.accept(self)
+        self.visit(expr.body)
         print()
 
         self.indent -= INDENT_SIZE
@@ -208,39 +195,39 @@ class ASTToOutputVisitor(Visitor):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_var_expr(self, expr: VarExprAST):
+    def visit_var_expr(self, expr: ast.VarExprAST):
         """
-        Visit a VarExprAST node.
+        Visit a ast.VarExprAST node.
 
         Args:
-            expr: The VarExprAST node to visit.
+            expr: The ast.VarExprAST node to visit.
         """
-        print("(VarExprAST ")
+        print("(ast.VarExprAST ")
         self.indent += INDENT_SIZE
 
         for var_expr in expr.var_names:
-            var_expr.second.accept(self)
+            self.visit(var_expr.second)
             print(",")
 
         self.indent -= INDENT_SIZE
 
         print(")")
 
-    def visit_prototype(self, expr: PrototypeAST):
+    def visit_prototype(self, expr: ast.PrototypeAST):
         """
-        Visit a PrototypeAST node.
+        Visit a ast.PrototypeAST node.
 
         Args:
-            expr: The PrototypeAST node to visit.
+            expr: The ast.PrototypeAST node to visit.
         """
-        print(f"(PrototypeAST {expr.name})")
+        print(f"(ast.PrototypeAST {expr.name})")
 
-    def visit_function(self, expr: FunctionAST):
+    def visit_function(self, expr: ast.FunctionAST):
         """
-        Visit a FunctionAST node.
+        Visit a ast.FunctionAST node.
 
         Args:
-            expr: The FunctionAST node to visit.
+            expr: The ast.FunctionAST node to visit.
         """
         print(f"{self.indentation()}(")
         self.indent += INDENT_SIZE
@@ -249,7 +236,7 @@ class ASTToOutputVisitor(Visitor):
         self.indent += INDENT_SIZE
 
         for node in expr.proto.args:
-            node.accept(self)
+            self.visit(node)
             print(",")
 
         self.indent -= INDENT_SIZE
@@ -257,7 +244,7 @@ class ASTToOutputVisitor(Visitor):
         print(f"{self.indentation()}<BODY> (")
 
         self.indent += INDENT_SIZE
-        expr.body.accept(self)
+        self.visit(expr.body)
 
         self.indent -= INDENT_SIZE
         print()
@@ -266,28 +253,25 @@ class ASTToOutputVisitor(Visitor):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_return_expr(self, expr: ReturnExprAST):
+    def visit_return_expr(self, expr: ast.ReturnExprAST):
         """
-        Visit a ReturnExprAST node.
+        Visit a ast.ReturnExprAST node.
 
         Args:
-            expr: The ReturnExprAST node to visit.
+            expr: The ast.ReturnExprAST node to visit.
         """
-        print(f"(ReturnExprAST {self.visit(expr.expr)})")
+        print(f"(ast.ReturnExprAST {self.visit(expr.expr)})")
 
+    def emit_ast(self, ast: ast.TreeAST) -> int:
+        """Print the AST for the given source code."""
 
-def emit_ast(ast: TreeAST) -> int:
-    """Print the AST for the given source code."""
-    visitor_print = ASTToOutputVisitor()
+        print("[")
+        self.indent += INDENT_SIZE
 
-    print("[")
-    visitor_print.indent += INDENT_SIZE
+        for node in ast.nodes:
+            if not node:
+                continue
+            self.visit(node)
+            print(f"{self.indentation()},")
 
-    for node in ast.nodes:
-        if not node:
-            continue
-        node.accept(visitor_print)
-        print(f"{visitor_print.indentation()},")
-
-    print("]")
-    return 0
+        print("]")

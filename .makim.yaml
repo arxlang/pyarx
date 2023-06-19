@@ -22,11 +22,31 @@ groups:
     targets:
       lint:
         help: run linter tools
-        run: pre-commit run --all-files
+        run: |
+          pre-commit install
+          pre-commit run --all-files
 
       unittest:
         help: run tests
-        run: pytest
+        run: pytest -vv
+
+      smoke:
+        help: run smoke tests
+        run: |
+          input_files = [
+            'constant.arx',
+            'average.arx',
+            'fibonacci.arx',
+            'print-start.arx',
+            'sum.arx',
+          ]
+          for filename in input_files:
+            arx --help
+            arx --version
+            arx --show-ast --input-file examples/@(filename).arx
+            arx --show-llvm-ir --input-file examples/@(filename).arx
+            arx --input-file examples/@(filename).arx
+
 
   docs:
     targets:

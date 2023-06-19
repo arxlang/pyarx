@@ -51,19 +51,20 @@ def get_args():
     )
 
     parser.add_argument(
-        "--input",
+        "--input-file",
         type=str,
         help="The input file",
     )
 
     parser.add_argument(
-        "--output",
+        "--output-file",
         type=str,
         help="The output file",
     )
 
     parser.add_argument(
         "--lib",
+        dest="is_lib",
         action="store_true",
         help="build source code as library",
     )

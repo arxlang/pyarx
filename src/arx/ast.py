@@ -53,83 +53,6 @@ class ExprKind(Enum):
     Decimal256DTKind = -121
 
 
-class Visitor:
-    """A base Visitor pattern class."""
-
-    def visit(self, expr: "ExprAST") -> Any:
-        """Call the correspondent visit function for the given expr type."""
-        map_visit_expr: Dict[Type[ExprAST], Callable] = {
-            BinaryExprAST: self.visit_binary_expr,
-            CallExprAST: self.visit_call_expr,
-            FloatExprAST: self.visit_float_expr,
-            ForExprAST: self.visit_for_expr,
-            FunctionAST: self.visit_function,
-            IfExprAST: self.visit_if_expr,
-            PrototypeAST: self.visit_prototype,
-            ReturnExprAST: self.visit_return_expr,
-            TreeAST: self.visit_tree,
-            UnaryExprAST: self.visit_unary_expr,
-            VarExprAST: self.visit_var_expr,
-            VariableExprAST: self.visit_variable_expr,
-        }
-
-        fn = map_visit_expr.get(type(expr))
-
-        if not fn:
-            print("Fail to downcasting ExprAST.")
-            return
-
-        return fn(expr)
-
-    def visit_binary_expr(self, expr: "BinaryExprAST") -> Any:
-        """Visit method for binary expression."""
-        raise Exception("Not implemented yet.")
-
-    def visit_call_expr(self, expr: "CallExprAST") -> Any:
-        """Visit method for function call."""
-        raise Exception("Not implemented yet.")
-
-    def visit_float_expr(self, expr: "FloatExprAST") -> Any:
-        """Visit method for float."""
-        raise Exception("Not implemented yet.")
-
-    def visit_for_expr(self, expr: "ForExprAST") -> Any:
-        """Visit method for `for` loop."""
-        raise Exception("Not implemented yet.")
-
-    def visit_function(self, expr: "FunctionAST") -> Any:
-        """Visit method for function definition."""
-        raise Exception("Not implemented yet.")
-
-    def visit_if_expr(self, expr: "IfExprAST") -> Any:
-        """Visit method for if statement."""
-        raise Exception("Not implemented yet.")
-
-    def visit_prototype(self, expr: "PrototypeAST") -> Any:
-        """Visit method for prototype."""
-        raise Exception("Not implemented yet.")
-
-    def visit_return_expr(self, expr: "ReturnExprAST") -> Any:
-        """Visit method for expression."""
-        raise Exception("Not implemented yet.")
-
-    def visit_tree(self, expr: "TreeAST") -> Any:
-        """Visit method for tree ast."""
-        raise Exception("Not implemented yet.")
-
-    def visit_unary_expr(self, expr: "UnaryExprAST") -> Any:
-        """Visit method for unary expression."""
-        raise Exception("Not implemented yet.")
-
-    def visit_var_expr(self, expr: "VarExprAST") -> Any:
-        """Visit method for variable declaration."""
-        raise Exception("Not implemented yet.")
-
-    def visit_variable_expr(self, expr: "VariableExprAST") -> Any:
-        """Visit method for variable usage."""
-        raise Exception("Not implemented yet.")
-
-
 class ExprAST:
     """AST main expression class."""
 
@@ -140,53 +63,6 @@ class ExprAST:
         """Initialize the ExprAST instance."""
         self.kind = ExprKind.GenericKind
         self.loc = loc
-
-    def get_line(self) -> int:
-        """Return the line number for the expression occurrence."""
-        return self.loc.line
-
-    def get_col(self) -> int:
-        """Return the column number for the expression occurrence."""
-        return self.loc.col
-
-    def accept(self, visitor: Visitor):
-        """
-        Invoke the appropriate visit method based on the expression kind.
-
-        Parameters
-        ----------
-        visitor : Visitor
-            The visitor object.
-
-        Raises
-        ------
-        ValueError
-            If the expression kind does not match any known type.
-        """
-        if self.kind in [
-            ExprKind.FloatDTKind,
-            ExprKind.VariableKind,
-            ExprKind.UnaryOpKind,
-            ExprKind.BinaryOpKind,
-            ExprKind.CallKind,
-            ExprKind.IfKind,
-            ExprKind.ForKind,
-            ExprKind.VarKind,
-            ExprKind.PrototypeKind,
-            ExprKind.FunctionKind,
-            ExprKind.ReturnKind,
-        ]:
-            return visitor.visit(self)
-
-        visitor.clean()
-        if self.kind == ExprKind.GenericKind:
-            print("[WW] Generic Kind doesn't have a downcasting")
-            return
-
-        print(f"[WW] DOWNCASTING MATCH FAILED. Expression Kind {self.kind}")
-
-    # def dump(self, out, ind: int):
-    #     return out.write(f":{self.get_line()}:{self.get_col()}\n")
 
 
 class FloatExprAST(ExprAST):
@@ -199,9 +75,6 @@ class FloatExprAST(ExprAST):
         super().__init__()
         self.value = val
         self.kind = ExprKind.FloatDTKind
-
-    # def dump(self, out, ind: int):
-    #     return super().dump(out.write(str(self.value)), ind)
 
 
 class VariableExprAST(ExprAST):
@@ -218,9 +91,6 @@ class VariableExprAST(ExprAST):
         """Return the variable name."""
         return self.name
 
-    # def dump(self, out, ind: int):
-    #     return super().dump(out.write(self.name), ind)
-
 
 class UnaryExprAST(ExprAST):
     """AST class for the unary operator."""
@@ -231,10 +101,6 @@ class UnaryExprAST(ExprAST):
         self.op_code = op_code
         self.operand = operand
         self.kind = ExprKind.UnaryOpKind
-
-    # def dump(self, out, ind: int):
-    #     super().dump(out.write("unary" + self.op_code), ind)
-    #     self.operand.dump(out, ind + 1)
 
 
 class BinaryExprAST(ExprAST):
@@ -250,11 +116,6 @@ class BinaryExprAST(ExprAST):
         self.rhs = rhs
         self.kind = ExprKind.BinaryOpKind
 
-    # def dump(self, out, ind: int):
-    #     super().dump(out.write("binary" + self.op), ind)
-    #     self.lhs.dump(indent(out, ind).write("lhs:"), ind + 1)
-    #     self.rhs.dump(indent(out, ind).write("rhs:"), ind + 1)
-
 
 class CallExprAST(ExprAST):
     """AST class for function call."""
@@ -265,11 +126,6 @@ class CallExprAST(ExprAST):
         self.callee = callee
         self.args = args
         self.kind = ExprKind.CallKind
-
-    # def dump(self, out, ind: int):
-    #     super().dump(out.write("call " + self.callee), ind)
-    #     for arg in self.args:
-    #         arg.dump(indent(out, ind + 1), ind + 1)
 
 
 class IfExprAST(ExprAST):
@@ -288,12 +144,6 @@ class IfExprAST(ExprAST):
         self.then_ = then_
         self.else_ = else_
         self.kind = ExprKind.IfKind
-
-    # def dump(self, out, ind: int):
-    #     super().dump(out.write("if"), ind)
-    #     self.cond.dump(indent(out, ind).write("cond:"), ind + 1)
-    #     self.then_.dump(indent(out, ind).write("then:"), ind + 1)
-    #     self.else_.dump(indent(out, ind).write("else:"), ind + 1)
 
 
 class ForExprAST(ExprAST):
@@ -322,13 +172,6 @@ class ForExprAST(ExprAST):
         self.body = body
         self.kind = ExprKind.ForKind
 
-    # def dump(self, out, ind: int):
-    #     super().dump(out.write("for"), ind)
-    #     self.start.dump(indent(out, ind).write("start:"), ind + 1)
-    #     self.end.dump(indent(out, ind).write("end:"), ind + 1)
-    #     self.step.dump(indent(out, ind).write("step:"), ind + 1)
-    #     self.body.dump(indent(out, ind).write("body:"), ind + 1)
-
 
 class VarExprAST(ExprAST):
     """AST class for variable declaration."""
@@ -349,12 +192,6 @@ class VarExprAST(ExprAST):
         self.type_name = type_name
         self.body = body
         self.kind = ExprKind.VarKind
-
-    # def dump(self, out, ind: int):
-    #     super().dump(out.write("var"), ind)
-    #     for name, expr in self.var_names:
-    #         expr.dump(indent(out, ind).write(name + ":"), ind + 1)
-    #     self.body.dump(indent(out, ind).write("body:"), ind + 1)
 
 
 class PrototypeAST(ExprAST):
@@ -379,10 +216,6 @@ class PrototypeAST(ExprAST):
         """Return the prototype name."""
         return self.name
 
-    def get_line(self) -> int:
-        """Return the line number of the occurrence of the expression."""
-        return self.line
-
 
 class ReturnExprAST(ExprAST):
     """AST class for function `return` statement."""
@@ -392,15 +225,6 @@ class ReturnExprAST(ExprAST):
         super().__init__()
         self.expr = expr
         self.kind = ExprKind.ReturnKind
-
-    # def dump(self, out, ind: int):
-    #     indent(out, ind).write("ReturnExprAST\n")
-    #     ind += 1
-    #     indent(out, ind).write("expr:")
-    #     if self.expr:
-    #         self.expr.dump(out, ind)
-    #     else:
-    #         out.write("null\n")
 
 
 class FunctionAST(ExprAST):
@@ -412,15 +236,6 @@ class FunctionAST(ExprAST):
         self.proto = proto
         self.body = body
         self.kind = ExprKind.FunctionKind
-
-    # def dump(self, out, ind: int):
-    #     indent(out, ind).write("FunctionAST\n")
-    #     ind += 1
-    #     indent(out, ind).write("body:")
-    #     if self.body:
-    #         self.body.dump(out, ind)
-    #     else:
-    #         out.write("null\n")
 
 
 class TreeAST(ExprAST):
