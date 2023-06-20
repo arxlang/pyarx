@@ -29,7 +29,12 @@ class ObjectGenerator(CodeGenLLVMBase):
     input_file: str = ""
     is_lib: bool = True
 
-    def __init__(self, input_file: str, output_file: str, is_lib: bool):
+    def __init__(
+        self,
+        input_file: str = "",
+        output_file: str = "tmp.o",
+        is_lib: bool = True,
+    ):
         self.input_file = input_file
         self.output_file = output_file or f"{input_file}.o"
         self.is_lib = is_lib

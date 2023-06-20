@@ -17,6 +17,8 @@ PROJECT_PATH = Path(__file__).parent.parent.resolve()
         """
         if (1 < 2):
             3
+        else:
+            2
         """,
         """
         fn add_one(a):
