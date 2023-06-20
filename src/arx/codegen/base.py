@@ -157,4 +157,4 @@ class CodeGenLLVMBase(CodeGenBase):
 
     def evaluate(self, tree: ast.TreeAST):
         """Evaluate the given AST object."""
-        raise Exception("Not implement yet.")
+        raise Exception(f"Not an evaluation for {tree} implement yet.")
