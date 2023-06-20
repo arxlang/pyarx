@@ -70,8 +70,8 @@ repos:
 
     - id: mccabe
       name: mccabe
-      entry: flake8 --max-complexity 15
-      language: python
+      entry: python -m mccabe --min 12
+      language: system
       files: "src/arx"
       pass_filenames: true
       types:
