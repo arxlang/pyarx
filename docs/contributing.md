@@ -3,7 +3,7 @@
 In order to be able to contribute, it is important that you understand
 the project layout.
 This project uses the *src layout*, which means that the package code is located
-at `./src/pyarx`.
+at `./src/arx`.
 
 For my information, check the official documentation:
 https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/
@@ -17,7 +17,7 @@ You can contribute in many ways:
 
 ### Report Bugs
 
-Report bugs at https://github.com/arxlang/pyarx/issues.
+Report bugs at https://github.com/arxlang/arx/issues.
 
 If you are reporting a bug, please include:
 
@@ -39,14 +39,14 @@ it.
 
 ### Write Documentation
 
-PyArx could always use more documentation,
-whether as part of the official PyArx docs,
+Arx could always use more documentation,
+whether as part of the official Arx docs,
 in docstrings, or even on the web in blog posts, articles, and such.
 
 ### Submit Feedback
 
 The best way to send feedback is to file an issue at
-https://github.com/arxlang/pyarx/issues.
+https://github.com/arxlang/arx/issues.
 
 If you are proposing a feature:
 
@@ -58,20 +58,20 @@ If you are proposing a feature:
 
 ## Get Started!
 
-Ready to contribute? Here’s how to set up `pyarx` for local development.
+Ready to contribute? Here’s how to set up `arx` for local development.
 
-1.  Fork the `pyarx` repo on GitHub.
+1.  Fork the `arx` repo on GitHub.
 
 2.  Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/pyarx.git
+    $ git clone git@github.com:your_name_here/arx.git
 
 3.  Install your local copy into a virtualenv. Assuming you have
     virtualenvwrapper installed, this is how you set up your fork for
     local development::
 
-    $ mkvirtualenv pyarx
-    $ cd pyarx/
+    $ mkvirtualenv arx
+    $ cd arx/
     $ python setup.py develop
 
 4.  Create a branch for local development::

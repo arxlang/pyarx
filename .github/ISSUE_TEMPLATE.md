@@ -1,4 +1,4 @@
-* PyArx version:
+* Arx version:
 * Python version:
 * Operating System:
 

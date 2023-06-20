@@ -1,3 +1,6 @@
+default_stages:
+  - commit
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
@@ -6,118 +9,70 @@ repos:
 
   - repo: local
     hooks:
-    - entry: black
-      id: black
+    - id: black
       name: black
-      exclude: |
-        (?x)(
-          docs
-        )
-      files: ""
+      entry: black
       language: system
       pass_filenames: true
-      stages:
-        - commit
-      types:
-        - python
-        - file
-        - python
-
-    - entry: flake8
-      exclude: ^$
-      files: ""
-      id: flake8
-      language: python
-      name: flake8
-      pass_filenames: true
-      stages:
-        - commit
       types:
         - python
 
-    - entry: isort
-      exclude: "^.*/js/.*$"
-      files: ""
-      id: isort
-      language: python
-      name: isort
-      pass_filenames: true
-      stages:
-        - commit
-      types:
-        - python
-
-    - entry: mypy
-      exclude: ^$
-      # note: it would be good to extend this to other apps as well
-      files: "pyarx/"
-      id: mypy
-      language: python
+    - id: mypy
       name: mypy
-      pass_filenames: true
-      stages:
-        - commit
-      types:
-        - python
-
-    - entry: shellcheck
-      id: shellcheck
+      entry: mypy
+      files: "src/arx"
       language: system
+      pass_filenames: true
+      types:
+        - python
+
+    - id: ruff
+      name: ruff
+      entry: ruff
+      files: "src/arx"
+      language: system
+      pass_filenames: true
+      types:
+        - python
+
+    - id: shellcheck
       name: shellcheck
-      files: .sh$
-      types:
-          - shell
+      entry: shellcheck
+      language: system
       types_or:
-          - file
-          - sh
-          - ash
-          - bash
-          - bats
-          - dash
-          - ksh
+        - sh
+        - shell
+        - ash
+        - bash
+        - bats
+        - dash
+        - ksh
 
-    - entry: bandit
-      id: bandit
-      language: python
+    - id: bandit
       name: bandit
+      entry: bandit
       args: ['-iii', '-ll', .bandit]
+      language: system
       pass_filenames: true
-      stages:
-        - commit
+      files: "src/arx/"
       types:
         - python
 
-    - entry: pydocstyle
-      exclude: ^$
-      files: "pyarx/"
-      id: pydocstyle
-      language: python
-      name: pydocstyle
-      pass_filenames: true
-      stages:
-        - commit
-      types:
-        - python
-
-    - entry: vulture
-      files: "pyarx/"
-      id: vulture
-      language: python
+    - id: vulture
       name: vulture
+      entry: vulture --min-confidence=80
+      files: "src/arx"
+      language: system
       description: Find unused Python code.
       pass_filenames: true
-      stages:
-        - commit
       types:
         - python
 
     - id: mccabe
       name: mccabe
-      entry: flake8 --max-complexity 10
-      language: python
-      files: "pyarx/"
+      entry: python -m mccabe --min 12
+      language: system
+      files: "src/arx"
       pass_filenames: true
-      stages:
-        - commit
       types:
         - python

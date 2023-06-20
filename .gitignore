@@ -98,3 +98,6 @@ ENV/
 # IDE settings
 .vscode/
 .idea/
+
+# arx
+*.arx.o
