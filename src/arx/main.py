@@ -14,7 +14,6 @@ class ArxMain:
 
     def run(self, *args, **kwargs):
         """Compile the given source code."""
-
         self.input_file = kwargs.get("input_file", "")
         self.output_file = kwargs.get("output_file", "")
         # is_lib now is the only available option
@@ -32,18 +31,22 @@ class ArxMain:
         self.compile()
 
     def show_ast(self):
+        """Print the AST for the given input file."""
         ArxIO.file_to_buffer(self.input_file)
         ast = Parser.parse()
         printer = ASTtoOutput()
         printer.emit_ast(ast)
 
     def show_llvm_ir(self):
+        """Compile into LLVM IR the given input file."""
         self.compile(show_llvm_ir=True)
 
     def run_shell(self):
+        """Open arx in shell mode."""
         raise Exception("Arx Shell is not implemented yet.")
 
     def compile(self, show_llvm_ir: bool = False):
+        """Compile the given input file."""
         ArxIO.file_to_buffer(self.input_file)
         ast = Parser.parse()
         obj_gen = ObjectGenerator(

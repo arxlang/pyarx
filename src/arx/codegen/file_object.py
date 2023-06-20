@@ -1,3 +1,4 @@
+"""File Object, Executable or LLVM IR generation."""
 import logging
 import sys
 from typing import List, Any, Dict
@@ -21,6 +22,8 @@ IS_BUILD_LIB: bool = True
 
 
 class ObjectGenerator(CodeGenLLVMBase):
+    """Generate object files or executable from an AST."""
+
     function_protos: Dict[str, ast.PrototypeAST]
     output_file: str = ""
     input_file: str = ""
@@ -82,10 +85,10 @@ class ObjectGenerator(CodeGenLLVMBase):
         ----------
             tree_ast: The AST tree object.
 
-        Returns:
+        Returns
+        -------
             int: The compilation result.
         """
-
         logging.info("Starting main_loop")
         self.visit_tree(tree_ast)
 
@@ -108,6 +111,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             self.compile_executable(self)
 
     def compile_executable(self):
+        """Compile into an executable file."""
         print("Not fully implemented yet.")
         # generate an executable file
 
@@ -168,7 +172,8 @@ class ObjectGenerator(CodeGenLLVMBase):
         """
         Open the Arx shell.
 
-        Returns:
+        Returns
+        -------
             int: The compilation result.
         """
         # Prime the first token.
@@ -201,19 +206,19 @@ class ObjectGenerator(CodeGenLLVMBase):
         self, var_name: str, type_name: str
     ) -> Any:  # llvm.AllocaInst
         """
-        Create the Entry Block Allocation.
+        Create an alloca instruction in the entry block of the function.
+
+        This is used for mutable variables, etc.
 
         Parameters
         ----------
-            fn: The llvm function
-            var_name: The variable name
-            type_name: The type name
+        fn: The llvm function
+        var_name: The variable name
+        type_name: The type name
 
-        Returns:
-            An llvm allocation instance.
-
-        create_entry_block_alloca - Create an alloca instruction in the entry
-        block of the function. This is used for mutable variables, etc.
+        Returns
+        -------
+          An llvm allocation instance.
         """
         tmp_builder = llvm.ir.IRBuilder()
         tmp_builder.position_at_start(
@@ -225,7 +230,8 @@ class ObjectGenerator(CodeGenLLVMBase):
 
     def visit_tree(self, tree: ast.TreeAST) -> List[Any]:
         """
-        The main loop that walks the AST.
+        Walk the AST and generate code for each node.
+
         top ::= definition | external | expression | ';'
 
         Parameters

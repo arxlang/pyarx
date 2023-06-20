@@ -1,3 +1,4 @@
+"""Base module for code generation."""
 from typing import Any, Callable, Type, Dict
 
 import llvmlite.binding as llvm
@@ -83,6 +84,8 @@ class CodeGenBase:
 
 
 class VariablesLLVM:
+    """Store all the LLVM variables that is used for the code generation."""
+
     FLOAT_TYPE: llvm.ir.types.Type
     DOUBLE_TYPE: llvm.ir.types.Type
     INT8_TYPE: llvm.ir.types.Type
@@ -153,4 +156,5 @@ class CodeGenLLVMBase(CodeGenBase):
         self._llvm.VOID_TYPE = llvm.ir.VoidType()
 
     def evaluate(self, tree: ast.TreeAST):
+        """Evaluate the given AST object."""
         raise Exception("Not implement yet.")
