@@ -1,36 +1,18 @@
 [tool.poetry]
-name = "arx"
+name = "arxlang"
 version = "0.1.0"  # semantic-release
 description = "Arx is a compiler built with llvm"
 authors = ["Ivan Ogasawara <ivan.ogasawara@gmail.com>"]
 license = "Apache Software License 2.0"
 include = [
-  "*.cfg",
-  "*.ini",
-  "*.js",
-  "*.json",
-  "*.lock",
-  "*.md",
-  "*.py",
-  "*.sh",
-  "*.rst",
-  "*.txt",
-  "*.toml",
-  "*.yml",
-  "*.yaml",
-  ".github",
-  "conda",
-  "docker",
-  "docs",
-  ".dockerignore",
-  ".env.tpl",
-  ".makim.yaml",
-  ".gitignore",
-  "Makefile",
+  "src/arx",
 ]
 exclude = [
   ".git/*",
   ".env*",
+]
+packages = [
+  {include = "arx", from="src"},
 ]
 
 [tool.poetry.scripts]
