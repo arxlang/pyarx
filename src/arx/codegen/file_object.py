@@ -75,9 +75,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         ir_builder.call(putchar, [ival])
         ir_builder.ret(llvm.ir.Constant(self._llvm.FLOAT_TYPE, 0))
 
-    def evaluate(
-        self, tree_ast: ast.TreeAST, show_llvm_ir: bool = False
-    ) -> int:
+    def evaluate(self, tree_ast: ast.TreeAST, show_llvm_ir: bool = False):
         """
         Compile an AST to an object file.
 
@@ -108,7 +106,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             print("Wrote " + self.output_file)
 
         if not self.is_lib:
-            self.compile_executable(self)
+            self.compile_executable()
 
     def compile_executable(self):
         """Compile into an executable file."""
@@ -168,7 +166,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return 0
 
-    def open_interactive(self) -> int:
+    def open_interactive(self):
         """
         Open the Arx shell.
 

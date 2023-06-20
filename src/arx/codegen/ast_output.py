@@ -215,7 +215,7 @@ class ASTtoOutput(CodeGenBase):
         self.indent += INDENT_SIZE
 
         for var_expr in expr.var_names:
-            self.visit(var_expr.second)
+            self.visit(var_expr[1])
             print(",")
 
         self.indent -= INDENT_SIZE
@@ -274,7 +274,7 @@ class ASTtoOutput(CodeGenBase):
         """
         print(f"(ast.ReturnExprAST {self.visit(expr.expr)})")
 
-    def emit_ast(self, ast: ast.TreeAST) -> int:
+    def emit_ast(self, ast: ast.TreeAST):
         """Print the AST for the given source code."""
         print("[")
         self.indent += INDENT_SIZE

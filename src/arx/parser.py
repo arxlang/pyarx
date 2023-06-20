@@ -3,7 +3,6 @@ from typing import Dict, List, Tuple
 
 from arx import ast
 from arx.lexer import Lexer, SourceLocation, TokenKind, Token
-from arx.logs import LogError
 
 
 class Parser:
@@ -72,13 +71,9 @@ class Parser:
         """
         Lexer.get_next_token()  # eat function.
         proto: ast.PrototypeAST = cls.parse_prototype()
-        if not proto:
-            return None
 
         expression: ast.ExprAST = cls.parse_expression()
-        if expression:
-            return ast.FunctionAST(proto, expression)
-        return None
+        return ast.FunctionAST(proto, expression)
 
     @classmethod
     def parse_extern(cls) -> ast.PrototypeAST:
@@ -106,11 +101,10 @@ class Parser:
             fails.
         """
         fn_loc: SourceLocation = Lexer.cur_loc
-        if expr := cls.parse_expression():
-            # Make an anonymous proto.
-            proto = ast.PrototypeAST(fn_loc, "__anon_expr", "float", [])
-            return ast.FunctionAST(proto, expr)
-        return None
+        expr = cls.parse_expression()
+        # Make an anonymous proto.
+        proto = ast.PrototypeAST(fn_loc, "__anon_expr", "float", [])
+        return ast.FunctionAST(proto, expr)
 
     @classmethod
     def parse_primary(cls) -> ast.ExprAST:
@@ -270,11 +264,7 @@ class Parser:
         args: List[ast.ExprAST] = []
         if Lexer.cur_tok != Token(kind=TokenKind.operator, value=")"):
             while True:
-                arg: ast.ExprAST = cls.parse_expression()
-                if arg:
-                    args.append(arg)
-                else:
-                    return None
+                args.append(cls.parse_expression())
 
                 if Lexer.cur_tok == Token(kind=TokenKind.operator, value=")"):
                     break
@@ -356,12 +346,13 @@ class Parser:
             Lexer.get_next_token()  # eat identifier.
 
             # Read the optional initializer. #
+            Init: ast.ExprAST
             if Lexer.cur_tok == Token(kind=TokenKind.operator, value="="):
                 Lexer.get_next_token()  # eat the '='.
 
-                Init: ast.ExprAST = cls.parse_expression()
+                Init = cls.parse_expression()
             else:
-                Init: ast.ExprAST = ast.FloatExprAST(0.0)
+                Init = ast.FloatExprAST(0.0)
 
             var_names.append((name, Init))
 
@@ -441,16 +432,12 @@ class Parser:
 
             # Parse the unary expression after the binary operator.
             rhs: ast.ExprAST = cls.parse_unary()
-            if not rhs:
-                return None
 
             # If BinOp binds less tightly with rhs than the operator after
             # rhs, let the pending operator take rhs as its lhs
             next_prec: int = cls.get_tok_precedence()
             if cur_prec < next_prec:
                 rhs = cls.parse_bin_op_rhs(cur_prec + 1, rhs)
-                if not rhs:
-                    return None
 
             # Merge lhs/rhs.
             lhs = ast.BinaryExprAST(bin_loc, bin_op, lhs, rhs)
