@@ -20,7 +20,7 @@ groups:
 
   tests:
     targets:
-      lint:
+      linter:
         help: run linter tools
         run: |
           pre-commit install
