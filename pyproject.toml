@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "arx"
+name = "arxlang"
 version = "0.1.0"  # semantic-release
 description = "Arx is a compiler built with llvm"
 authors = ["Ivan Ogasawara <ivan.ogasawara@gmail.com>"]
@@ -31,6 +31,9 @@ include = [
 exclude = [
   ".git/*",
   ".env*",
+]
+packages = [
+  { include = "src/arx" },
 ]
 
 [tool.poetry.scripts]
