@@ -1,6 +1,6 @@
 """AST classes and functions."""
 from enum import Enum
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 from arx.lexer import Lexer, SourceLocation
 
@@ -220,7 +220,7 @@ class PrototypeAST(ExprAST):
 class ReturnExprAST(ExprAST):
     """AST class for function `return` statement."""
 
-    def __init__(self, expr: Optional[ExprAST]):
+    def __init__(self, expr: ExprAST):
         """Initialize the ReturnExprAST instance."""
         super().__init__()
         self.expr = expr
