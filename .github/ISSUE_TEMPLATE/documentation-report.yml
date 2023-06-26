@@ -15,7 +15,7 @@ body:
       GitHub][issue search].
 
 
-      [issue search]: arxlang/pyarx/issues?q=is%3Aopen+is%3Aissue+label%3Adocs
+      [issue search]: arxlang/arx/issues?q=is%3Aopen+is%3Aissue+label%3Adocs
 
 - type: textarea
   attributes:
@@ -45,7 +45,7 @@ body:
     description: |
       Read the [`Arx` Code of Conduct][CoC] first.
 
-      [CoC]: arxlang/pyarx/blob/main/CODE_OF_CONDUCT.md
+      [CoC]: arxlang/arx/blob/main/CODE_OF_CONDUCT.md
     options:
     - label: I agree to follow the Code of Conduct
       required: true
