@@ -446,6 +446,17 @@ files = [
 ]
 
 [[package]]
+name = "docstring-parser"
+version = "0.15"
+description = "Parse Python docstrings in reST, Google and Numpydoc format"
+optional = false
+python-versions = ">=3.6,<4.0"
+files = [
+    {file = "docstring_parser-0.15-py3-none-any.whl", hash = "sha256:d1679b86250d269d06a99670924d6bce45adc00b08069dae8c47d98e89b667a9"},
+    {file = "docstring_parser-0.15.tar.gz", hash = "sha256:48ddc093e8b1865899956fcc03b03e66bb7240c310fac5af81814580c55bf682"},
+]
+
+[[package]]
 name = "entrypoints"
 version = "0.4"
 description = "Discover and load entry points from installed packages."
@@ -1609,6 +1620,7 @@ files = [
 
 [package.dependencies]
 astunparse = {version = ">=1.6", markers = "python_version < \"3.9\""}
+docstring_parser = {version = ">=0.7", optional = true, markers = "extra == \"numpy-style\""}
 
 [package.extras]
 numpy-style = ["docstring_parser (>=0.7)"]
@@ -2175,4 +2187,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "7e23e3c8068648c81153d7cf9c25fe60de42f76abd7e5166728ad00374f4498e"
+content-hash = "e33e02daa293ff8a8ab3dec7739be400374357e689c2b7051f0676bc43edd34f"

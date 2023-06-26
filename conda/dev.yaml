@@ -1,4 +1,4 @@
-name: pyarx
+name: arx
 channels:
   - nodefaults
   - conda-forge

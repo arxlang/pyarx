@@ -56,17 +56,20 @@ groups:
     targets:
       build:
         help: build documentation
-        run: mkdocs build --config-file docs/mkdocs.yaml
+        run: |
+          mkdocs build --config-file mkdocs.yaml
+          echo "arxlang.org" > ./build/CNAME
 
       preview:
         help: preview documentation page locally
-        run: mkdocs serve --watch docs --config-file docs/mkdocs.yaml
+        run: mkdocs serve --watch docs --config-file mkdocs.yaml
 
   release:
     vars:
       app: |
         npx --yes \
           -p semantic-release \
+          -p conventional-changelog-conventionalcommits \
           -p "@semantic-release/commit-analyzer" \
           -p "@semantic-release/release-notes-generator" \
           -p "@semantic-release/changelog" \
@@ -85,5 +88,3 @@ groups:
         help: run semantic release in dry-run mode
         run: |
           {{ vars.app }} --dry-run
-          poetry build
-          poetry publish --dry-run
