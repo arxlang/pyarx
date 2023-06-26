@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arxlang"
-version = "0.1.0"  # semantic-release
+version = "0.1.1"  # semantic-release
 description = "Arx is a compiler built with llvm"
 authors = ["Ivan Ogasawara <ivan.ogasawara@gmail.com>"]
 license = "Apache Software License 2.0"
