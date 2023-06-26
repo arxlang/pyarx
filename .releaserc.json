@@ -10,12 +10,12 @@
       {
         "replacements": [
           {
-            "files": ["{{ cookiecutter.package_slug }}/src/__init__.py"],
+            "files": ["src/arx/__init__.py"],
             "from": "return '.*'  # semantic-release",
             "to": "return '${nextRelease.version}'  # semantic-release",
             "results": [
               {
-                "file": "{{ cookiecutter.package_slug }}/src/__init__.py",
+                "file": "src/arx/__init__.py",
                 "hasChanged": true,
                 "numMatches": 1,
                 "numReplacements": 1
@@ -68,7 +68,7 @@
         "assets": [
           "pyproject.toml",
           "docs/changelog.md",
-          "{{ cookiecutter.package_slug }}/src/__init__.py"
+          "src/arx/__init__.py"
         ],
         "message": "chore(release): ${nextRelease.version}"
       }
