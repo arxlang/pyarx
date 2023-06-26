@@ -60,57 +60,54 @@ If you are proposing a feature:
 
 Ready to contribute? Here’s how to set up `arx` for local development.
 
-1.  Fork the `arx` repo on GitHub.
+1. Fork the `arx` repo on GitHub.
+2. Clone your fork locally:
+```bash
+$ git clone git@github.com:your_name_here/arx.git
+$ cd arx
+```
+3. Create the conda environment (using mamba or conda) and install the project:
+```bash
+$ mamba env create --file conda/dev.yaml
+$ conda activate arx
+$ poetry install
+```
+4. Create a branch for local development:
+```bash
+$ git checkout -b name-of-your-bugfix-or-feature
+```
+5. Now you can make your changes locally.
 
-2.  Clone your fork locally::
-
-    $ git clone git@github.com:your_name_here/arx.git
-
-3.  Install your local copy into a virtualenv. Assuming you have
-    virtualenvwrapper installed, this is how you set up your fork for
-    local development::
-
-    $ mkvirtualenv arx
-    $ cd arx/
-    $ python setup.py develop
-
-4.  Create a branch for local development::
-
-    $ git checkout -b name-of-your-bugfix-or-feature
-
-    Now you can make your changes locally.
-
-5.  When you’re done making changes, check that your changes pass flake8
-    and the tests, including testing other Python versions with tox::
-
-    $ make lint
-    $ make test
-
-    To get flake8 and tox, just pip install them into your virtualenv.
-
-6.  Commit your changes and push your branch to GitHub::
-
-    $ git add . $ git commit -m “Your detailed description of your
-    changes.” $ git push origin name-of-your-bugfix-or-feature
-
-7.  Submit a pull request through the GitHub website.
+6. When you’re done making changes, check that your changes pass the linter
+   and the tests:
+```bash
+$ makim tests.linter
+$ makim tests.unittest
+```
+7. Commit your changes and push your branch to GitHub:
+```bash
+$ git add .
+$ git commit -m "Your detailed description of your changes."
+$ git push origin name-of-your-bugfix-or-feature
+```
+8.  Submit a pull request through the GitHub website.
 
 ## Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1.  The pull request should include tests.
-2.  If the pull request adds functionality, the docs should be updated.
-    Put your new functionality into a function with a docstring, and add
-    the feature to the list in README.rst.
-3.  The pull request should work for Python >= 3.8.
+1. The pull request should include tests.
+2. If the pull request adds functionality, the docs should be updated.
+   Put your new functionality into a function with a docstring, and add
+   the feature to the list in README.rst.
+3. The pull request should work for Python >= 3.8.1.
 
 ## Tips
 
-To run a subset of tests::
+To run a subset of tests:
 
-```
-$ pytest tests.test_pyarx
+```bash
+$ pytest tests/test_io.py
 ```
 
 ## Release
@@ -147,7 +144,7 @@ when `semantic-release` runs (using the default configuration):
 | `fix(pencil): stop graphite breaking when pressure is applied` | Fix Release      |
 | `feat(pencil): add 'graphiteWidth' option`                     | Feature Release  |
 | `perf(pencil): remove graphiteWidth option`                    | Chore            |
-| `BREAKING CHANGE: The graphiteWidth option has been removed`   | Breaking Release |
+| `fix(pencil)!: The graphiteWidth option has been removed`      | Breaking Release |
 
 source:
 <https://github.com/semantic-release/semantic-release/blob/master/README.md#commit-message-format>
