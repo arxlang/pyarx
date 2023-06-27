@@ -15,6 +15,7 @@ def test_token_name():
     assert Token(kind=TokenKind.kw_if, value="").get_name() == "if"
     assert Token(kind=TokenKind.kw_for, value="").get_name() == "for"
     assert Token(kind=TokenKind.operator, value="+").get_name() == "+"
+    assert Token(kind=TokenKind.operator, value="+").get_name() == "+"
 
 
 @pytest.mark.parametrize("value", ["123", "234", "345"])

@@ -1,5 +1,7 @@
 """Arx main module."""
 from arx.io import ArxIO
+
+from arx.lexer import Lexer
 from arx.parser import Parser
 from arx.codegen.ast_output import ASTtoOutput
 from arx.codegen.file_object import ObjectGenerator
@@ -22,6 +24,9 @@ class ArxMain:
         if kwargs.get("show_ast"):
             return self.show_ast()
 
+        if kwargs.get("show_tokens"):
+            return self.show_tokens()
+
         if kwargs.get("show_llvm_ir"):
             return self.show_llvm_ir()
 
@@ -36,6 +41,13 @@ class ArxMain:
         ast = Parser.parse()
         printer = ASTtoOutput()
         printer.emit_ast(ast)
+
+    def show_tokens(self):
+        """Print the AST for the given input file."""
+        ArxIO.file_to_buffer(self.input_file)
+
+        while Lexer.get_next_token().value:
+            print(Lexer.cur_tok)
 
     def show_llvm_ir(self):
         """Compile into LLVM IR the given input file."""

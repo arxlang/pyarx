@@ -76,6 +76,12 @@ def get_args():
     )
 
     parser.add_argument(
+        "--show-tokens",
+        action="store_true",
+        help="Show the tokens for the input source code",
+    )
+
+    parser.add_argument(
         "--show-llvm-ir",
         action="store_true",
         help="Show the LLVM IR for the input source code",

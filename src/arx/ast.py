@@ -207,7 +207,7 @@ class PrototypeAST(ExprAST):
     """AST class for function prototype declaration."""
 
     name: str
-    args: List[VariablesExprAST]
+    args: List[VariableExprAST]
     type_name: str
 
     def __init__(
