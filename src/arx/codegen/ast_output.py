@@ -274,7 +274,7 @@ class ASTtoOutput(CodeGenBase):
         """
         print(f"(ast.ReturnExprAST {self.visit(expr.expr)})")
 
-    def emit_ast(self, ast: ast.TreeAST):
+    def emit_ast(self, ast: ast.BlockAST):
         """Print the AST for the given source code."""
         print("[")
         self.indent += INDENT_SIZE

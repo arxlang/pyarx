@@ -51,7 +51,7 @@ def test_parse():
 
     expr = Parser.parse()
     assert expr
-    assert isinstance(expr, ast.TreeAST)
+    assert isinstance(expr, ast.BlockAST)
 
 
 def test_parse_if_expr():

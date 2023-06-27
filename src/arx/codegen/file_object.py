@@ -80,20 +80,20 @@ class ObjectGenerator(CodeGenLLVMBase):
         ir_builder.call(putchar, [ival])
         ir_builder.ret(llvm.ir.Constant(self._llvm.FLOAT_TYPE, 0))
 
-    def evaluate(self, tree_ast: ast.TreeAST, show_llvm_ir: bool = False):
+    def evaluate(self, block_ast: ast.BlockAST, show_llvm_ir: bool = False):
         """
         Compile an AST to an object file.
 
         Parameters
         ----------
-            tree_ast: The AST tree object.
+            block_ast: The AST tree object.
 
         Returns
         -------
             int: The compilation result.
         """
         logging.info("Starting main_loop")
-        self.visit_tree(tree_ast)
+        self.visit_tree(block_ast)
 
         # Convert LLVM IR into in-memory representation
         if show_llvm_ir:
@@ -231,7 +231,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             self._llvm.get_data_type(type_name), None, var_name
         )
 
-    def visit_tree(self, tree: ast.TreeAST) -> List[Any]:
+    def visit_tree(self, tree: ast.BlockAST) -> List[Any]:
         """
         Walk the AST and generate code for each node.
 
@@ -239,7 +239,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         Parameters
         ----------
-            tree: The ast.TreeAST instance.
+            tree: The ast.BlockAST instance.
         """
         result = []
         for node in tree.nodes:

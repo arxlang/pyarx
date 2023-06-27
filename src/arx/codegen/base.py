@@ -20,7 +20,7 @@ class CodeGenBase:
             ast.IfExprAST: self.visit_if_expr,
             ast.PrototypeAST: self.visit_prototype,
             ast.ReturnExprAST: self.visit_return_expr,
-            ast.TreeAST: self.visit_tree,
+            ast.BlockAST: self.visit_tree,
             ast.UnaryExprAST: self.visit_unary_expr,
             ast.VarExprAST: self.visit_var_expr,
             ast.VariableExprAST: self.visit_variable_expr,
@@ -66,7 +66,7 @@ class CodeGenBase:
         """Visit method for expression."""
         raise Exception("Not implemented yet.")
 
-    def visit_tree(self, expr: ast.TreeAST) -> Any:
+    def visit_tree(self, expr: ast.BlockAST) -> Any:
         """Visit method for tree ast."""
         raise Exception("Not implemented yet.")
 
@@ -155,6 +155,6 @@ class CodeGenLLVMBase(CodeGenBase):
         self._llvm.INT32_TYPE = llvm.ir.IntType(32)
         self._llvm.VOID_TYPE = llvm.ir.VoidType()
 
-    def evaluate(self, tree: ast.TreeAST):
+    def evaluate(self, tree: ast.BlockAST):
         """Evaluate the given AST object."""
         raise Exception(f"Not an evaluation for {tree} implement yet.")

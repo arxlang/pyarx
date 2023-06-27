@@ -65,6 +65,15 @@ class ExprAST:
         self.loc = loc
 
 
+class BlockAST(ExprAST):
+    """The AST tree."""
+
+    def __init__(self):
+        """Initialize the BlockAST instance."""
+        super().__init__()
+        self.nodes: List[ExprAST] = []
+
+
 class FloatExprAST(ExprAST):
     """AST for the literal float number."""
 
@@ -135,8 +144,8 @@ class IfExprAST(ExprAST):
         self,
         loc: SourceLocation,
         cond: ExprAST,
-        then_: ExprAST,
-        else_: ExprAST,
+        then_: BlockAST,
+        else_: BlockAST,
     ):
         """Initialize the IfExprAST instance."""
         super().__init__(loc)
@@ -153,7 +162,7 @@ class ForExprAST(ExprAST):
     start: ExprAST
     end: ExprAST
     step: ExprAST
-    body: ExprAST
+    body: BlockAST
 
     def __init__(
         self,
@@ -161,7 +170,7 @@ class ForExprAST(ExprAST):
         start: ExprAST,
         end: ExprAST,
         step: ExprAST,
-        body: ExprAST,
+        body: BlockAST,
     ):
         """Initialize the ForExprAST instance."""
         super().__init__()
@@ -197,6 +206,10 @@ class VarExprAST(ExprAST):
 class PrototypeAST(ExprAST):
     """AST class for function prototype declaration."""
 
+    name: str
+    args: List[VariablesExprAST]
+    type_name: str
+
     def __init__(
         self,
         loc: SourceLocation,
@@ -220,6 +233,8 @@ class PrototypeAST(ExprAST):
 class ReturnExprAST(ExprAST):
     """AST class for function `return` statement."""
 
+    expr: ExprAST
+
     def __init__(self, expr: ExprAST):
         """Initialize the ReturnExprAST instance."""
         super().__init__()
@@ -230,18 +245,12 @@ class ReturnExprAST(ExprAST):
 class FunctionAST(ExprAST):
     """AST class for function definition."""
 
-    def __init__(self, proto: PrototypeAST, body: ExprAST):
+    proto: PrototypeAST
+    body: BlockAST
+
+    def __init__(self, proto: PrototypeAST, body: BlockAST):
         """Initialize the FunctionAST instance."""
         super().__init__()
         self.proto = proto
         self.body = body
         self.kind = ExprKind.FunctionKind
-
-
-class TreeAST(ExprAST):
-    """The AST tree."""
-
-    def __init__(self):
-        """Initialize the TreeAST instance."""
-        super().__init__()
-        self.nodes: List[ExprAST] = []

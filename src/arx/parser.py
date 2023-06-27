@@ -18,16 +18,16 @@ class Parser:
     }
 
     @classmethod
-    def parse(cls) -> ast.TreeAST:
+    def parse(cls) -> ast.BlockAST:
         """
         Parse the input code.
 
         Returns
         -------
-        ast.TreeAST
+        ast.BlockAST
             The parsed abstract syntax tree (AST), or None if parsing fails.
         """
-        tree: ast.TreeAST = ast.TreeAST()
+        tree: ast.BlockAST = ast.BlockAST()
         Lexer.get_next_token()
 
         while True:
