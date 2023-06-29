@@ -385,13 +385,13 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return self._llvm.ir_builder.call(callee_f, llvm_args, "calltmp")
 
-    def visit_if_expr(self, expr: ast.IfExprAST) -> llvm.ir.Value:
+    def visit_if_expr(self, expr: ast.IfStmtAST) -> llvm.ir.Value:
         """
-        Code generation for ast.IfExprAST.
+        Code generation for ast.IfStmtAST.
 
         Parameters
         ----------
-            expr: The ast.IfExprAST instance
+            expr: The ast.IfStmtAST instance
         """
         cond_v = self.visit(expr.cond)
 
@@ -450,13 +450,13 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return phi
 
-    def visit_for_expr(self, expr: ast.ForExprAST) -> llvm.ir.Value:
+    def visit_for_expr(self, expr: ast.ForStmtAST) -> llvm.ir.Value:
         """
-        Code generation for ast.ForExprAST.
+        Code generation for ast.ForStmtAST.
 
         Parameters
         ----------
-            expr: The ast.ForExprAST instance.
+            expr: The ast.ForStmtAST instance.
         """
         saved_block = self._llvm.ir_builder.block
         var_addr = self.create_entry_block_alloca(expr.var_name, "float")
@@ -618,13 +618,13 @@ class ObjectGenerator(CodeGenLLVMBase):
             )
         return fn
 
-    def visit_return_expr(self, expr: ast.ReturnExprAST) -> llvm.ir.Value:
+    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> llvm.ir.Value:
         """
-        Code generation for ast.ReturnExprAST.
+        Code generation for ast.ReturnStmtAST.
 
         Parameters
         ----------
-            expr: The ast.ReturnExprAST instance.
+            expr: The ast.ReturnStmtAST instance.
         """
         # llvm_return_val = self.result_val
         #

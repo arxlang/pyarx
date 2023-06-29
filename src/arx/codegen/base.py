@@ -15,11 +15,11 @@ class CodeGenBase:
             ast.BinaryExprAST: self.visit_binary_expr,
             ast.CallExprAST: self.visit_call_expr,
             ast.FloatExprAST: self.visit_float_expr,
-            ast.ForExprAST: self.visit_for_expr,
+            ast.ForStmtAST: self.visit_for_expr,
             ast.FunctionAST: self.visit_function,
-            ast.IfExprAST: self.visit_if_expr,
+            ast.IfStmtAST: self.visit_if_expr,
             ast.PrototypeAST: self.visit_prototype,
-            ast.ReturnExprAST: self.visit_return_expr,
+            ast.ReturnStmtAST: self.visit_return_expr,
             ast.BlockAST: self.visit_tree,
             ast.UnaryExprAST: self.visit_unary_expr,
             ast.VarExprAST: self.visit_var_expr,
@@ -46,7 +46,7 @@ class CodeGenBase:
         """Visit method for float."""
         raise Exception("Not implemented yet.")
 
-    def visit_for_expr(self, expr: ast.ForExprAST) -> Any:
+    def visit_for_expr(self, expr: ast.ForStmtAST) -> Any:
         """Visit method for `for` loop."""
         raise Exception("Not implemented yet.")
 
@@ -54,7 +54,7 @@ class CodeGenBase:
         """Visit method for function definition."""
         raise Exception("Not implemented yet.")
 
-    def visit_if_expr(self, expr: ast.IfExprAST) -> Any:
+    def visit_if_expr(self, expr: ast.IfStmtAST) -> Any:
         """Visit method for if statement."""
         raise Exception("Not implemented yet.")
 
@@ -62,7 +62,7 @@ class CodeGenBase:
         """Visit method for prototype."""
         raise Exception("Not implemented yet.")
 
-    def visit_return_expr(self, expr: ast.ReturnExprAST) -> Any:
+    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> Any:
         """Visit method for expression."""
         raise Exception("Not implemented yet.")
 

@@ -55,17 +55,14 @@ def test_get_next_token_simple():
 
 
 def test_get_tok():
-    """Test gettok for main tokens"""
+    """Test gettok for main tokens."""
     ArxIO.string_to_buffer(
-        """
-  fn math(x):
-    if x > 10:
-      x + 1
-    else:
-      x * 20
-
-  math(1)
-  """
+        "fn math(x):\n"
+        "  if x > 10:\n"
+        "    return x + 1\n"
+        "  else:\n"
+        "    return x * 20\n"
+        "math(1)\n"
     )
 
     assert Lexer.gettok() == Token(kind=TokenKind.kw_function, value="fn")
@@ -74,16 +71,22 @@ def test_get_tok():
     assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value=")")
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value=":")
+    assert Lexer.gettok() == Token(kind=TokenKind.indent, value=2)
     assert Lexer.gettok() == Token(kind=TokenKind.kw_if, value="if")
     assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value=">")
     assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=10.0)
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value=":")
+    assert Lexer.gettok() == Token(kind=TokenKind.indent, value=4)
+    assert Lexer.gettok() == Token(kind=TokenKind.kw_return, value="return")
     assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value="+")
     assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=1.0)
+    assert Lexer.gettok() == Token(kind=TokenKind.indent, value=2)
     assert Lexer.gettok() == Token(kind=TokenKind.kw_else, value="else")
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value=":")
+    assert Lexer.gettok() == Token(kind=TokenKind.indent, value=4)
+    assert Lexer.gettok() == Token(kind=TokenKind.kw_return, value="return")
     assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="x")
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value="*")
     assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=20.0)

@@ -72,8 +72,10 @@ class Parser:
         Lexer.get_next_token()  # eat function.
         proto: ast.PrototypeAST = cls.parse_prototype()
 
+        block: ast.BlockAST = ast.BlockAST()
         expression: ast.ExprAST = cls.parse_expression()
-        return ast.FunctionAST(proto, expression)
+        block.nodes.append(expression)
+        return ast.FunctionAST(proto, block)
 
     @classmethod
     def parse_extern(cls) -> ast.PrototypeAST:
@@ -101,10 +103,11 @@ class Parser:
             fails.
         """
         fn_loc: SourceLocation = Lexer.cur_loc
-        expr = cls.parse_expression()
+        body_block: ast.BlockAST = ast.BlockAST()
+        body_block.nodes.append(cls.parse_expression())
         # Make an anonymous proto.
         proto = ast.PrototypeAST(fn_loc, "__anon_expr", "float", [])
-        return ast.FunctionAST(proto, expr)
+        return ast.FunctionAST(proto, body_block)
 
     @classmethod
     def parse_primary(cls) -> ast.ExprAST:
@@ -160,13 +163,13 @@ class Parser:
         return cls.parse_bin_op_rhs(0, lhs)
 
     @classmethod
-    def parse_if_expr(cls) -> ast.IfExprAST:
+    def parse_if_expr(cls) -> ast.IfStmtAST:
         """
         Parse the `if` expression.
 
         Returns
         -------
-        ast.IfExprAST
+        ast.IfStmtAST
             The parsed `if` expression, or None if parsing fails.
         """
         if_loc: SourceLocation = Lexer.cur_loc
@@ -185,26 +188,26 @@ class Parser:
 
         Lexer.get_next_token()  # eat the ':'
 
-        then_expr: ast.ExprAST = cls.parse_expression()
+        then_block: ast.BlockAST = ast.BlockAST()
+        else_block: ast.BlockAST = ast.BlockAST()
 
-        if Lexer.cur_tok.kind != TokenKind.kw_else:
-            raise Exception("Parser: Expected else")
+        then_block.nodes.append(cls.parse_expression())
 
-        Lexer.get_next_token()  # eat the else token
+        if Lexer.cur_tok.kind == TokenKind.kw_else:
+            Lexer.get_next_token()  # eat the else token
 
-        if Lexer.cur_tok != Token(kind=TokenKind.operator, value=":"):
-            msg = (
-                "Parser: `else` statement expected ':', received: '"
-                + str(Lexer.cur_tok)
-                + "'."
-            )
-            raise Exception(msg)
+            if Lexer.cur_tok != Token(kind=TokenKind.operator, value=":"):
+                msg = (
+                    "Parser: `else` statement expected ':', received: '"
+                    + str(Lexer.cur_tok)
+                    + "'."
+                )
+                raise Exception(msg)
 
-        Lexer.get_next_token()  # eat the ':'
+            Lexer.get_next_token()  # eat the ':'
+            else_block.nodes.append(cls.parse_expression())
 
-        else_expr: ast.ExprAST = cls.parse_expression()
-
-        return ast.IfExprAST(if_loc, cond, then_expr, else_expr)
+        return ast.IfStmtAST(if_loc, cond, then_block, else_block)
 
     @classmethod
     def parse_float_expr(cls) -> ast.FloatExprAST:
@@ -281,13 +284,13 @@ class Parser:
         return ast.CallExprAST(id_loc, id_name, args)
 
     @classmethod
-    def parse_for_expr(cls) -> ast.ForExprAST:
+    def parse_for_expr(cls) -> ast.ForStmtAST:
         """
         Parse the `for` expression.
 
         Returns
         -------
-        ast.ForExprAST
+        ast.ForStmtAST
             The parsed `for` expression, or None if parsing fails.
         """
         Lexer.get_next_token()  # eat the for.
@@ -320,8 +323,9 @@ class Parser:
             raise Exception("Parser: Expected 'in' after for")
         Lexer.get_next_token()  # eat 'in'.
 
-        body: ast.ExprAST = cls.parse_expression()
-        return ast.ForExprAST(id_name, start, end, step, body)
+        body_block: ast.BlockAST = ast.BlockAST()
+        body_block.nodes.append(cls.parse_expression())
+        return ast.ForStmtAST(id_name, start, end, step, body_block)
 
     @classmethod
     def parse_var_expr(cls) -> ast.VarExprAST:
@@ -556,14 +560,14 @@ class Parser:
         return ast.PrototypeAST(fn_loc, fn_name, ret_typing, args)
 
     @classmethod
-    def parse_return_function(cls) -> ast.ReturnExprAST:
+    def parse_return_function(cls) -> ast.ReturnStmtAST:
         """
         Parse the return expression.
 
         Returns
         -------
-        ast.ReturnExprAST
+        ast.ReturnStmtAST
             The parsed return expression, or None if parsing fails.
         """
         Lexer.get_next_token()  # eat return
-        return ast.ReturnExprAST(cls.parse_primary())
+        return ast.ReturnStmtAST(cls.parse_primary())

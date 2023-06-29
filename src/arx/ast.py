@@ -68,6 +68,8 @@ class ExprAST:
 class BlockAST(ExprAST):
     """The AST tree."""
 
+    nodes: List[ExprAST]
+
     def __init__(self):
         """Initialize the BlockAST instance."""
         super().__init__()
@@ -137,8 +139,12 @@ class CallExprAST(ExprAST):
         self.kind = ExprKind.CallKind
 
 
-class IfExprAST(ExprAST):
+class IfStmtAST(ExprAST):
     """AST class for `if` statement."""
+
+    cond: ExprAST
+    then_: BlockAST
+    else_: BlockAST
 
     def __init__(
         self,
@@ -147,7 +153,7 @@ class IfExprAST(ExprAST):
         then_: BlockAST,
         else_: BlockAST,
     ):
-        """Initialize the IfExprAST instance."""
+        """Initialize the IfStmtAST instance."""
         super().__init__(loc)
         self.cond = cond
         self.then_ = then_
@@ -155,7 +161,7 @@ class IfExprAST(ExprAST):
         self.kind = ExprKind.IfKind
 
 
-class ForExprAST(ExprAST):
+class ForStmtAST(ExprAST):
     """AST class for `For` statement."""
 
     var_name: str
@@ -172,7 +178,7 @@ class ForExprAST(ExprAST):
         step: ExprAST,
         body: BlockAST,
     ):
-        """Initialize the ForExprAST instance."""
+        """Initialize the ForStmtAST instance."""
         super().__init__()
         self.var_name = var_name
         self.start = start
@@ -230,13 +236,13 @@ class PrototypeAST(ExprAST):
         return self.name
 
 
-class ReturnExprAST(ExprAST):
+class ReturnStmtAST(ExprAST):
     """AST class for function `return` statement."""
 
     expr: ExprAST
 
     def __init__(self, expr: ExprAST):
-        """Initialize the ReturnExprAST instance."""
+        """Initialize the ReturnStmtAST instance."""
         super().__init__()
         self.expr = expr
         self.kind = ExprKind.ReturnKind

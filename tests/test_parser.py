@@ -68,7 +68,7 @@ def test_parse_if_expr():
     Lexer.get_next_token()
     expr = Parser.parse_primary()
     assert expr
-    assert isinstance(expr, ast.IfExprAST)
+    assert isinstance(expr, ast.IfStmtAST)
     assert isinstance(expr.cond, ast.BinaryExprAST)
     assert isinstance(expr.then_, ast.BinaryExprAST)
     assert isinstance(expr.else_, ast.BinaryExprAST)
@@ -92,7 +92,7 @@ def test_parse_fn():
     assert isinstance(expr, ast.FunctionAST)
     assert isinstance(expr.proto, ast.PrototypeAST)
     assert isinstance(expr.proto.args[0], ast.VariableExprAST)
-    assert isinstance(expr.body, ast.IfExprAST)
+    assert isinstance(expr.body, ast.IfStmtAST)
     assert isinstance(expr.body.cond, ast.BinaryExprAST)
     assert isinstance(expr.body.then_, ast.BinaryExprAST)
     assert isinstance(expr.body.else_, ast.BinaryExprAST)

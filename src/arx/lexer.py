@@ -166,6 +166,7 @@ class Lexer:
     _keyword_map = {
         "fn": TokenKind.kw_function,
         "extern": TokenKind.kw_extern,
+        "return": TokenKind.kw_return,
         "if": TokenKind.kw_if,
         "then": TokenKind.kw_then,
         "else": TokenKind.kw_else,
