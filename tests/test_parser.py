@@ -97,4 +97,4 @@ def test_parse_fn():
     assert isinstance(expr.body.nodes[0].else_.nodes[0], ast.BinaryExprAST)
     assert isinstance(expr.body.nodes[1], ast.ReturnStmtAST)
     assert isinstance(expr.body.nodes[1].value, ast.VariableExprAST)
-    assert isinstance(expr.body.nodes[1].value.name, "a")
+    assert expr.body.nodes[1].value.name == "a"

@@ -84,7 +84,6 @@ class Parser:
         """
         Lexer.get_next_token()  # eat function.
         proto: ast.PrototypeAST = cls.parse_prototype()
-        breakpoint()
         return ast.FunctionAST(proto, cls.parse_block())
 
     @classmethod
@@ -156,13 +155,20 @@ class Parser:
 
             while expr := cls.parse_expression():
                 block.nodes.append(expr)
+                # if isinstance(expr, ast.IfStmtAST):
+                #     breakpoint()
                 if Lexer.cur_tok.kind != TokenKind.indent:
                     break
 
-                new_indent = Lexer.cur_tok
-                Lexer.get_next_token()  # eat indentation
-                if new_indent.value < cur_indent:
+                new_indent = Lexer.cur_tok.value
+
+                if new_indent < cur_indent:
                     break
+
+                if new_indent > cur_indent:
+                    raise ParserException("Indentation not allowed here.")
+
+                Lexer.get_next_token()  # eat indentation
 
         cls.indent_level -= INDENT_SIZE
         return block
