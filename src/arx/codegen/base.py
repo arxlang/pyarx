@@ -4,6 +4,7 @@ from typing import Any, Callable, Type, Dict
 import llvmlite.binding as llvm
 
 from arx import ast
+from arx.exceptions import CodeGenException
 
 
 class CodeGenBase:
@@ -20,7 +21,7 @@ class CodeGenBase:
             ast.IfStmtAST: self.visit_if_expr,
             ast.PrototypeAST: self.visit_prototype,
             ast.ReturnStmtAST: self.visit_return_expr,
-            ast.BlockAST: self.visit_tree,
+            ast.BlockAST: self.visit_block,
             ast.UnaryExprAST: self.visit_unary_expr,
             ast.VarExprAST: self.visit_var_expr,
             ast.VariableExprAST: self.visit_variable_expr,
@@ -36,51 +37,51 @@ class CodeGenBase:
 
     def visit_binary_expr(self, expr: ast.BinaryExprAST) -> Any:
         """Visit method for binary expression."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_call_expr(self, expr: ast.CallExprAST) -> Any:
         """Visit method for function call."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_float_expr(self, expr: ast.FloatExprAST) -> Any:
         """Visit method for float."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_for_expr(self, expr: ast.ForStmtAST) -> Any:
         """Visit method for `for` loop."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_function(self, expr: ast.FunctionAST) -> Any:
         """Visit method for function definition."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_if_expr(self, expr: ast.IfStmtAST) -> Any:
         """Visit method for if statement."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_prototype(self, expr: ast.PrototypeAST) -> Any:
         """Visit method for prototype."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_return_expr(self, expr: ast.ReturnStmtAST) -> Any:
         """Visit method for expression."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
-    def visit_tree(self, expr: ast.BlockAST) -> Any:
+    def visit_block(self, expr: ast.BlockAST) -> Any:
         """Visit method for tree ast."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_unary_expr(self, expr: ast.UnaryExprAST) -> Any:
         """Visit method for unary expression."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_var_expr(self, expr: ast.VarExprAST) -> Any:
         """Visit method for variable declaration."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
     def visit_variable_expr(self, expr: ast.VariableExprAST) -> Any:
         """Visit method for variable usage."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
 
 class VariablesLLVM:
@@ -122,7 +123,7 @@ class VariablesLLVM:
         elif type_name == "void":
             return self.VOID_TYPE
 
-        raise Exception("[EE] CodeGen(LLVM): type_name not valid.")
+        raise CodeGenException("[EE] CodeGen(LLVM): type_name not valid.")
 
 
 class CodeGenLLVMBase(CodeGenBase):
@@ -157,4 +158,4 @@ class CodeGenLLVMBase(CodeGenBase):
 
     def evaluate(self, tree: ast.BlockAST):
         """Evaluate the given AST object."""
-        raise Exception(f"Not an evaluation for {tree} implement yet.")
+        raise CodeGenException(f"Not an evaluation for {tree} implement yet.")

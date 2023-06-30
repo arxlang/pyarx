@@ -1,8 +1,7 @@
 """Set of classes and functions to emit the AST from a given source code."""
 from arx.codegen.base import CodeGenBase
 from arx import ast
-
-INDENT_SIZE = 2
+from arx.parser import INDENT_SIZE
 
 
 class ASTtoOutput(CodeGenBase):
@@ -43,6 +42,23 @@ class ASTtoOutput(CodeGenBase):
         annotation = self.annotation
         self.annotation = ""
         return annotation
+
+    def visit_block(self, expr: ast.BlockAST):
+        """
+        Visit method for tree ast.
+
+        Parameters
+        ----------
+            expr: The ast.BlockAST node to visit.
+        """
+        print(f"{self.indentation()}(Block")
+        self.indent += INDENT_SIZE
+
+        for node in expr.nodes:
+            self.visit(node)
+
+        self.indent -= INDENT_SIZE
+        print(f"{self.indentation()})")
 
     def visit_float_expr(self, expr: ast.FloatExprAST):
         """
