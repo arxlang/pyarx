@@ -239,12 +239,12 @@ class PrototypeAST(ExprAST):
 class ReturnStmtAST(ExprAST):
     """AST class for function `return` statement."""
 
-    expr: ExprAST
+    value: ExprAST
 
-    def __init__(self, expr: ExprAST):
+    def __init__(self, value: ExprAST):
         """Initialize the ReturnStmtAST instance."""
         super().__init__()
-        self.expr = expr
+        self.value = value
         self.kind = ExprKind.ReturnKind
 
 

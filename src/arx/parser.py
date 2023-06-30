@@ -52,7 +52,7 @@ class Parser:
                 # ignore top-level semicolons.
                 Lexer.get_next_token()
             elif Lexer.cur_tok.kind == TokenKind.kw_function:
-                tree.nodes.append(cls.parse_definition())
+                tree.nodes.append(cls.parse_function())
             elif Lexer.cur_tok.kind == TokenKind.kw_extern:
                 tree.nodes.append(cls.parse_extern())
             else:
@@ -73,7 +73,7 @@ class Parser:
         return cls.bin_op_precedence.get(Lexer.cur_tok.value, -1)
 
     @classmethod
-    def parse_definition(cls) -> ast.FunctionAST:
+    def parse_function(cls) -> ast.FunctionAST:
         """
         Parse the function definition expression.
 
@@ -84,7 +84,7 @@ class Parser:
         """
         Lexer.get_next_token()  # eat function.
         proto: ast.PrototypeAST = cls.parse_prototype()
-
+        breakpoint()
         return ast.FunctionAST(proto, cls.parse_block())
 
     @classmethod
@@ -128,9 +128,7 @@ class Parser:
             Lexer.get_next_token()  # eat `;`
             return cls.parse_primary()
         elif Lexer.cur_tok.kind == TokenKind.kw_return:
-            # ignore return for now
-            Lexer.get_next_token()  # eat kw_return
-            return cls.parse_primary()
+            return cls.parse_return_function()
         elif Lexer.cur_tok.kind == TokenKind.indent:
             return cls.parse_block()
         else:
@@ -593,4 +591,4 @@ class Parser:
             The parsed return expression, or None if parsing fails.
         """
         Lexer.get_next_token()  # eat return
-        return ast.ReturnStmtAST(cls.parse_primary())
+        return ast.ReturnStmtAST(cls.parse_expression())

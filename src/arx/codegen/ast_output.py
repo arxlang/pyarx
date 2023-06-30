@@ -51,14 +51,8 @@ class ASTtoOutput(CodeGenBase):
         ----------
             expr: The ast.BlockAST node to visit.
         """
-        print(f"{self.indentation()}(Block")
-        self.indent += INDENT_SIZE
-
         for node in expr.nodes:
             self.visit(node)
-
-        self.indent -= INDENT_SIZE
-        print(f"{self.indentation()})")
 
     def visit_float_expr(self, expr: ast.FloatExprAST):
         """
@@ -288,7 +282,7 @@ class ASTtoOutput(CodeGenBase):
         ----------
             expr: The ast.ReturnStmtAST node to visit.
         """
-        print(f"(ast.ReturnStmtAST {self.visit(expr.expr)})")
+        print(f"(ast.ReturnStmtAST {self.visit(expr.value)})")
 
     def emit_ast(self, ast: ast.BlockAST):
         """Print the AST for the given source code."""

@@ -44,7 +44,9 @@ def test_parse_float_expr():
 def test_parse():
     """Test gettok for main tokens."""
     Parser.reset()
-    ArxIO.string_to_buffer("if 1 > 2:\n" "  a = 1\n" "else:\n" "  a = 2\n")
+    ArxIO.string_to_buffer(
+        "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
+    )
 
     expr = Parser.parse()
     assert expr
@@ -54,7 +56,9 @@ def test_parse():
 def test_parse_if_stmt():
     """Test gettok for main tokens."""
     Parser.reset()
-    ArxIO.string_to_buffer("if 1 > 2:\n" "  a = 1\n" "else:\n" "  a = 2\n")
+    ArxIO.string_to_buffer(
+        "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
+    )
 
     Lexer.get_next_token()
     expr = Parser.parse_primary()
@@ -71,10 +75,15 @@ def test_parse_fn():
     """Test gettok for main tokens."""
     Parser.reset()
     ArxIO.string_to_buffer(
-        "fn math(x):\n" "  if 1 > 2:\n" "    a = 1\n" "  else:\n" "    a = 2\n"
+        "fn math(x):\n"
+        + "  if 1 > 2:\n"
+        + "    a = 1\n"
+        + "  else:\n"
+        + "    a = 2\n"
+        + "  return a\n"
     )
     Lexer.get_next_token()
-    expr = Parser.parse_definition()
+    expr = Parser.parse_function()
     assert expr
     assert isinstance(expr, ast.FunctionAST)
     assert isinstance(expr.proto, ast.PrototypeAST)
@@ -86,3 +95,6 @@ def test_parse_fn():
     assert isinstance(expr.body.nodes[0].then_.nodes[0], ast.BinaryExprAST)
     assert isinstance(expr.body.nodes[0].else_, ast.BlockAST)
     assert isinstance(expr.body.nodes[0].else_.nodes[0], ast.BinaryExprAST)
+    assert isinstance(expr.body.nodes[1], ast.ReturnStmtAST)
+    assert isinstance(expr.body.nodes[1].value, ast.VariableExprAST)
+    assert isinstance(expr.body.nodes[1].value.name, "a")

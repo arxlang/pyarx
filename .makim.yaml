@@ -47,6 +47,7 @@ groups:
 
             arx --help
             arx --version
+            arx --show-tokens --input-file examples/@(filename).arx
             arx --show-ast --input-file examples/@(filename).arx
             arx --show-llvm-ir --input-file examples/@(filename).arx
             arx --input-file examples/@(filename).arx
