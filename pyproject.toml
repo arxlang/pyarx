@@ -44,6 +44,7 @@ mkdocs-material = ">=8.2.1,<9"
 mkdocstrings = ">=0.17.0,<0.18.0"
 makim = "1.8.1"
 pytkdocs = {extras = ["numpy-style"], version = "^0.16.1"}
+pdbpp = "^0.10.3"
 
 [tool.pytest.ini_options]
 testpaths = [

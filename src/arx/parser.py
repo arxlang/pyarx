@@ -2,7 +2,10 @@
 from typing import Dict, List, Tuple
 
 from arx import ast
+from arx.exceptions import ParserException
 from arx.lexer import Lexer, SourceLocation, TokenKind, Token
+
+INDENT_SIZE = 2
 
 
 class Parser:
@@ -17,6 +20,13 @@ class Parser:
         "*": 40,
     }
 
+    indent_level: int = 0
+
+    @classmethod
+    def reset(cls):
+        """Reset the Parser static variables."""
+        cls.indent_level = 0
+
     @classmethod
     def parse(cls) -> ast.BlockAST:
         """
@@ -27,23 +37,26 @@ class Parser:
         ast.BlockAST
             The parsed abstract syntax tree (AST), or None if parsing fails.
         """
+        cls.reset()
+
         tree: ast.BlockAST = ast.BlockAST()
         Lexer.get_next_token()
 
+        if Lexer.cur_tok.kind == TokenKind.not_initialized:
+            Lexer.get_next_token()
+
         while True:
             if Lexer.cur_tok.kind == TokenKind.eof:
-                return tree
-            elif Lexer.cur_tok.kind == TokenKind.not_initialized:
-                Lexer.get_next_token()
+                break
             elif Lexer.cur_tok == Token(kind=TokenKind.operator, value=";"):
-                Lexer.get_next_token()
                 # ignore top-level semicolons.
+                Lexer.get_next_token()
             elif Lexer.cur_tok.kind == TokenKind.kw_function:
                 tree.nodes.append(cls.parse_definition())
             elif Lexer.cur_tok.kind == TokenKind.kw_extern:
                 tree.nodes.append(cls.parse_extern())
             else:
-                tree.nodes.append(cls.parse_top_level_expr())
+                tree.nodes.append(cls.parse_expression())
 
         return tree
 
@@ -72,10 +85,7 @@ class Parser:
         Lexer.get_next_token()  # eat function.
         proto: ast.PrototypeAST = cls.parse_prototype()
 
-        block: ast.BlockAST = ast.BlockAST()
-        expression: ast.ExprAST = cls.parse_expression()
-        block.nodes.append(expression)
-        return ast.FunctionAST(proto, block)
+        return ast.FunctionAST(proto, cls.parse_block())
 
     @classmethod
     def parse_extern(cls) -> ast.PrototypeAST:
@@ -92,24 +102,6 @@ class Parser:
         return cls.parse_extern_prototype()
 
     @classmethod
-    def parse_top_level_expr(cls) -> ast.FunctionAST:
-        """
-        Parse the top level expression.
-
-        Returns
-        -------
-        ast.FunctionAST
-            The parsed top level expression as a function, or None if parsing
-            fails.
-        """
-        fn_loc: SourceLocation = Lexer.cur_loc
-        body_block: ast.BlockAST = ast.BlockAST()
-        body_block.nodes.append(cls.parse_expression())
-        # Make an anonymous proto.
-        proto = ast.PrototypeAST(fn_loc, "__anon_expr", "float", [])
-        return ast.FunctionAST(proto, body_block)
-
-    @classmethod
     def parse_primary(cls) -> ast.ExprAST:
         """
         Parse the primary expression.
@@ -119,8 +111,6 @@ class Parser:
         ast.ExprAST
             The parsed primary expression, or None if parsing fails.
         """
-        msg: str = ""
-
         if Lexer.cur_tok.kind == TokenKind.identifier:
             return cls.parse_identifier_expr()
         elif Lexer.cur_tok.kind == TokenKind.float_literal:
@@ -128,9 +118,9 @@ class Parser:
         elif Lexer.cur_tok == Token(kind=TokenKind.operator, value="("):
             return cls.parse_paren_expr()
         elif Lexer.cur_tok.kind == TokenKind.kw_if:
-            return cls.parse_if_expr()
+            return cls.parse_if_stmt()
         elif Lexer.cur_tok.kind == TokenKind.kw_for:
-            return cls.parse_for_expr()
+            return cls.parse_for_stmt()
         elif Lexer.cur_tok.kind == TokenKind.kw_var:
             return cls.parse_var_expr()
         elif Lexer.cur_tok == Token(kind=TokenKind.operator, value=";"):
@@ -141,13 +131,43 @@ class Parser:
             # ignore return for now
             Lexer.get_next_token()  # eat kw_return
             return cls.parse_primary()
+        elif Lexer.cur_tok.kind == TokenKind.indent:
+            return cls.parse_block()
         else:
-            msg = (
+            msg: str = (
                 "Parser: Unknown token when expecting an expression:"
                 f"'{Lexer.cur_tok.get_name()}'."
             )
             Lexer.get_next_token()  # eat unknown token
             raise Exception(msg)
+
+    @classmethod
+    def parse_block(cls) -> ast.BlockAST:
+        """Parse a block of nodes."""
+        cur_indent: int = Lexer.cur_tok.value
+
+        Lexer.get_next_token()  # eat indentation
+
+        block: ast.BlockAST = ast.BlockAST()
+
+        if cur_indent == cls.indent_level:
+            raise ParserException("There is no new block to be parsed.")
+
+        if cur_indent > cls.indent_level:
+            cls.indent_level = cur_indent
+
+            while expr := cls.parse_expression():
+                block.nodes.append(expr)
+                if Lexer.cur_tok.kind != TokenKind.indent:
+                    break
+
+                new_indent = Lexer.cur_tok
+                Lexer.get_next_token()  # eat indentation
+                if new_indent.value < cur_indent:
+                    break
+
+        cls.indent_level -= INDENT_SIZE
+        return block
 
     @classmethod
     def parse_expression(cls) -> ast.ExprAST:
@@ -163,7 +183,7 @@ class Parser:
         return cls.parse_bin_op_rhs(0, lhs)
 
     @classmethod
-    def parse_if_expr(cls) -> ast.IfStmtAST:
+    def parse_if_stmt(cls) -> ast.IfStmtAST:
         """
         Parse the `if` expression.
 
@@ -191,7 +211,10 @@ class Parser:
         then_block: ast.BlockAST = ast.BlockAST()
         else_block: ast.BlockAST = ast.BlockAST()
 
-        then_block.nodes.append(cls.parse_expression())
+        then_block = cls.parse_block()
+
+        if Lexer.cur_tok.kind == TokenKind.indent:
+            Lexer.get_next_token()  # eat the indentation
 
         if Lexer.cur_tok.kind == TokenKind.kw_else:
             Lexer.get_next_token()  # eat the else token
@@ -205,7 +228,7 @@ class Parser:
                 raise Exception(msg)
 
             Lexer.get_next_token()  # eat the ':'
-            else_block.nodes.append(cls.parse_expression())
+            else_block = cls.parse_block()
 
         return ast.IfStmtAST(if_loc, cond, then_block, else_block)
 
@@ -284,7 +307,7 @@ class Parser:
         return ast.CallExprAST(id_loc, id_name, args)
 
     @classmethod
-    def parse_for_expr(cls) -> ast.ForStmtAST:
+    def parse_for_stmt(cls) -> ast.ForStmtAST:
         """
         Parse the `for` expression.
 
