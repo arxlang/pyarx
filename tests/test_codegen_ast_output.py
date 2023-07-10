@@ -4,7 +4,7 @@ from arx.io import ArxIO
 from arx.parser import Parser
 
 
-def test_ast_to_output():
+def test_ast_to_output() -> None:
     ArxIO.string_to_buffer(
         "fn add_one(a):\n" + "  a + 1\n" + "\n" + "add(1);\n"
     )

@@ -4,7 +4,7 @@ from arx.lexer import Lexer, TokenKind, Token
 from arx.parser import Parser
 
 
-def test_binop_precedence():
+def test_binop_precedence() -> None:
     """Test BinOp precedence."""
     Parser.reset()
 
@@ -16,7 +16,7 @@ def test_binop_precedence():
     assert Parser.bin_op_precedence["*"] == 40
 
 
-def test_parse_float_expr():
+def test_parse_float_expr() -> None:
     """Test gettok for main tokens"""
     ArxIO.string_to_buffer("1 2")
     Parser.reset()
@@ -41,7 +41,7 @@ def test_parse_float_expr():
     assert expr.value == 3
 
 
-def test_parse():
+def test_parse() -> None:
     """Test gettok for main tokens."""
     Parser.reset()
     ArxIO.string_to_buffer(
@@ -53,7 +53,7 @@ def test_parse():
     assert isinstance(expr, ast.BlockAST)
 
 
-def test_parse_if_stmt():
+def test_parse_if_stmt() -> None:
     """Test gettok for main tokens."""
     Parser.reset()
     ArxIO.string_to_buffer(
@@ -71,7 +71,7 @@ def test_parse_if_stmt():
     assert isinstance(expr.else_.nodes[0], ast.BinaryExprAST)
 
 
-def test_parse_fn():
+def test_parse_fn() -> None:
     """Test gettok for main tokens."""
     Parser.reset()
     ArxIO.string_to_buffer(

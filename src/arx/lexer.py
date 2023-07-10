@@ -130,15 +130,14 @@ class Token:
             str: The string representation of the token value.
         """
         if self.kind == TokenKind.identifier:
-            return "(" + self.value + ")"
+            return "(" + str(self.value) + ")"
         if self.kind == TokenKind.indent:
             return "(" + str(self.value) + ")"
         elif self.kind == TokenKind.float_literal:
             return "(" + str(self.value) + ")"
-        else:
-            return ""
+        return ""
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Display the token in a readable way."""
         return f"{self.get_name()}{self.get_display_value()}"
 
@@ -175,6 +174,15 @@ class Lexer:
         "var": TokenKind.kw_var,
         "const": TokenKind.kw_const,
     }
+
+    @classmethod
+    def clean(cls) -> None:
+        """Reset the Lexer attributes."""
+        cls.cur_loc = SourceLocation(0, 0)
+        cls.cur_tok = Token(kind=TokenKind.not_initialized, value="")
+        cls.lex_loc = SourceLocation(0, 0)
+        cls.last_char = ""
+        cls.new_line = True
 
     @classmethod
     def gettok(cls) -> Token:

@@ -27,7 +27,7 @@ PROJECT_PATH = Path(__file__).parent.parent.resolve()
         """,
     ],
 )
-def test_objeject_generation(code):
+def test_objeject_generation(code: str) -> None:
     ArxIO.string_to_buffer(code)
     ast = Parser.parse()
     objgen = ObjectGenerator()

@@ -59,7 +59,7 @@ class ExprAST:
     loc: SourceLocation
     kind: ExprKind
 
-    def __init__(self, loc: SourceLocation = Lexer.cur_loc):
+    def __init__(self, loc: SourceLocation = Lexer.cur_loc) -> None:
         """Initialize the ExprAST instance."""
         self.kind = ExprKind.GenericKind
         self.loc = loc
@@ -70,7 +70,7 @@ class BlockAST(ExprAST):
 
     nodes: List[ExprAST]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the BlockAST instance."""
         super().__init__()
         self.nodes: List[ExprAST] = []
@@ -81,7 +81,7 @@ class FloatExprAST(ExprAST):
 
     value: float
 
-    def __init__(self, val: float):
+    def __init__(self, val: float) -> None:
         """Initialize the FloatAST instance."""
         super().__init__()
         self.value = val
@@ -91,7 +91,7 @@ class FloatExprAST(ExprAST):
 class VariableExprAST(ExprAST):
     """AST class for the variable usage."""
 
-    def __init__(self, loc: SourceLocation, name: str, type_name: str):
+    def __init__(self, loc: SourceLocation, name: str, type_name: str) -> None:
         """Initialize the VariableExprAST instance."""
         super().__init__(loc)
         self.name = name
@@ -106,7 +106,7 @@ class VariableExprAST(ExprAST):
 class UnaryExprAST(ExprAST):
     """AST class for the unary operator."""
 
-    def __init__(self, op_code: str, operand: ExprAST):
+    def __init__(self, op_code: str, operand: ExprAST) -> None:
         """Initialize the UnaryExprAST instance."""
         super().__init__()
         self.op_code = op_code
@@ -119,7 +119,7 @@ class BinaryExprAST(ExprAST):
 
     def __init__(
         self, loc: SourceLocation, op: str, lhs: ExprAST, rhs: ExprAST
-    ):
+    ) -> None:
         """Initialize the BinaryExprAST instance."""
         super().__init__(loc)
         self.op = op
@@ -131,7 +131,9 @@ class BinaryExprAST(ExprAST):
 class CallExprAST(ExprAST):
     """AST class for function call."""
 
-    def __init__(self, loc: SourceLocation, callee: str, args: List[ExprAST]):
+    def __init__(
+        self, loc: SourceLocation, callee: str, args: List[ExprAST]
+    ) -> None:
         """Initialize the CallExprAST instance."""
         super().__init__(loc)
         self.callee = callee
@@ -152,7 +154,7 @@ class IfStmtAST(ExprAST):
         cond: ExprAST,
         then_: BlockAST,
         else_: BlockAST,
-    ):
+    ) -> None:
         """Initialize the IfStmtAST instance."""
         super().__init__(loc)
         self.cond = cond
@@ -177,7 +179,7 @@ class ForStmtAST(ExprAST):
         end: ExprAST,
         step: ExprAST,
         body: BlockAST,
-    ):
+    ) -> None:
         """Initialize the ForStmtAST instance."""
         super().__init__()
         self.var_name = var_name
@@ -200,7 +202,7 @@ class VarExprAST(ExprAST):
         var_names: List[Tuple[str, ExprAST]],
         type_name: str,
         body: ExprAST,
-    ):
+    ) -> None:
         """Initialize the VarExprAST instance."""
         super().__init__()
         self.var_names = var_names
@@ -222,7 +224,7 @@ class PrototypeAST(ExprAST):
         name: str,
         type_name: str,
         args: List[VariableExprAST],
-    ):
+    ) -> None:
         """Initialize the PrototypeAST instance."""
         super().__init__()
         self.name = name
@@ -241,7 +243,7 @@ class ReturnStmtAST(ExprAST):
 
     value: ExprAST
 
-    def __init__(self, value: ExprAST):
+    def __init__(self, value: ExprAST) -> None:
         """Initialize the ReturnStmtAST instance."""
         super().__init__()
         self.value = value
@@ -254,7 +256,7 @@ class FunctionAST(ExprAST):
     proto: PrototypeAST
     body: BlockAST
 
-    def __init__(self, proto: PrototypeAST, body: BlockAST):
+    def __init__(self, proto: PrototypeAST, body: BlockAST) -> None:
         """Initialize the FunctionAST instance."""
         super().__init__()
         self.proto = proto

@@ -12,7 +12,9 @@ class CodeGenBase:
 
     def visit(self, expr: ast.ExprAST) -> Any:
         """Call the correspondent visit function for the given expr type."""
-        map_visit_expr: Dict[Type[ast.ExprAST], Callable] = {
+        map_visit_expr: Dict[
+            Type[ast.ExprAST], Callable[[ast.ExprAST], llvm.ir.Value]
+        ] = {
             ast.BinaryExprAST: self.visit_binary_expr,
             ast.CallExprAST: self.visit_call_expr,
             ast.FloatExprAST: self.visit_float_expr,
@@ -132,7 +134,7 @@ class CodeGenLLVMBase(CodeGenBase):
     named_values: Dict[str, Any] = {}  # AllocaInst
     _llvm: VariablesLLVM
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize self."""
         # self._llvm.context = llvm.ir.context.Context()
         self._llvm = VariablesLLVM()
@@ -156,6 +158,6 @@ class CodeGenLLVMBase(CodeGenBase):
         self._llvm.INT32_TYPE = llvm.ir.IntType(32)
         self._llvm.VOID_TYPE = llvm.ir.VoidType()
 
-    def evaluate(self, tree: ast.BlockAST):
+    def evaluate(self, tree: ast.BlockAST) -> None:
         """Evaluate the given AST object."""
         raise CodeGenException(f"Not an evaluation for {tree} implement yet.")

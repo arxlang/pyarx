@@ -1,6 +1,6 @@
 """File Object, Executable or LLVM IR generation."""
 import logging
-import sys
+import os
 from typing import List, Any, Dict
 
 from llvmlite import binding as llvm
@@ -52,7 +52,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         self._add_builtins()
 
-    def _add_builtins(self):
+    def _add_builtins(self) -> None:
         # The C++ tutorial adds putchard() simply by defining it in the host
         # C++ code, which is then accessible to the JIT. It doesn't work as
         # simply for us; but luckily it's very easy to define new "C level"
@@ -80,7 +80,9 @@ class ObjectGenerator(CodeGenLLVMBase):
         ir_builder.call(putchar, [ival])
         ir_builder.ret(llvm.ir.Constant(self._llvm.FLOAT_TYPE, 0))
 
-    def evaluate(self, block_ast: ast.BlockAST, show_llvm_ir: bool = False):
+    def evaluate(
+        self, block_ast: ast.BlockAST, show_llvm_ir: bool = False
+    ) -> None:
         """
         Compile an AST to an object file.
 
@@ -113,7 +115,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         if not self.is_lib:
             self.compile_executable()
 
-    def compile_executable(self):
+    def compile_executable(self) -> None:
         """Compile into an executable file."""
         print("Not fully implemented yet.")
         # generate an executable file
@@ -161,7 +163,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         compiler_cmd = linker_path + " " + " ".join(compiler_args)
 
         print("ARX[INFO]: ", compiler_cmd)
-        compile_result = sys.system(compiler_cmd)
+        compile_result = os.system(compiler_cmd)
 
         ArxFile.delete_file(main_cpp_path)
 
@@ -169,9 +171,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             llvm.errs() << "failed to compile and link object file"
             exit(1)
 
-        return 0
-
-    def open_interactive(self):
+    def open_interactive(self) -> None:
         """
         Open the Arx shell.
 
@@ -190,7 +190,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             except KeyboardInterrupt:
                 break
 
-    def get_function(self, name: str):
+    def get_function(self, name: str) -> llvm.ir.Function:
         """
         Put the function defined by the given name to result_func.
 

@@ -10,21 +10,21 @@ class ArxBuffer:
     buffer: str = ""
     position: int = 0
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize ArxBuffer instance."""
         self.clean()
 
-    def clean(self):
+    def clean(self) -> None:
         """Clean the buffer content."""
         self.position = 0
         self.buffer = ""
 
-    def write(self, text: str):
+    def write(self, text: str) -> None:
         """Write the given text to the buffer."""
         self.buffer += text
         self.position = 0
 
-    def read(self):
+    def read(self) -> str:
         """Read the buffer content."""
         try:
             i = self.position
@@ -57,7 +57,7 @@ class ArxIO:
         return cls.buffer.read()
 
     @classmethod
-    def file_to_buffer(cls, filename: str):
+    def file_to_buffer(cls, filename: str) -> None:
         """
         Copy the file content to the buffer.
 
@@ -72,7 +72,7 @@ class ArxIO:
                 cls.buffer.write(line + "\n")
 
     @classmethod
-    def string_to_buffer(cls, value: str):
+    def string_to_buffer(cls, value: str) -> None:
         """
         Copy the given string to the buffer.
 
@@ -85,7 +85,7 @@ class ArxIO:
         cls.buffer.write(value)
 
     @classmethod
-    def load_input_to_buffer(cls):
+    def load_input_to_buffer(cls) -> None:
         """Load the content file or the standard input to the buffer."""
         if cls.INPUT_FILE:
             input_file_path = os.path.abspath(cls.INPUT_FILE)

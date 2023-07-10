@@ -5,7 +5,8 @@ from arx.io import ArxIO
 from arx.lexer import Lexer, TokenKind, Token
 
 
-def test_token_name():
+def test_token_name() -> None:
+    Lexer.clean()
     assert Token(kind=TokenKind.eof, value="").get_name() == "eof"
     assert Token(kind=TokenKind.kw_function, value="").get_name() == "function"
     assert Token(kind=TokenKind.kw_return, value="").get_name() == "return"
@@ -19,15 +20,17 @@ def test_token_name():
 
 
 @pytest.mark.parametrize("value", ["123", "234", "345"])
-def test_advance(value):
+def test_advance(value: str) -> None:
     ArxIO.string_to_buffer(value)
+    Lexer.clean()
     assert Lexer.advance() == value[0]
     assert Lexer.advance() == value[1]
     assert Lexer.advance() == value[2]
 
 
-def test_get_tok_simple():
+def test_get_tok_simple() -> None:
     ArxIO.string_to_buffer("11")
+    Lexer.clean()
     assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=11.0)
 
     ArxIO.string_to_buffer("21")
@@ -37,8 +40,9 @@ def test_get_tok_simple():
     assert Lexer.gettok() == Token(kind=TokenKind.float_literal, value=31.0)
 
 
-def test_get_next_token_simple():
+def test_get_next_token_simple() -> None:
     ArxIO.string_to_buffer("11")
+    Lexer.clean()
     assert Lexer.get_next_token() == Token(
         kind=TokenKind.float_literal, value=11.0
     )
@@ -54,7 +58,7 @@ def test_get_next_token_simple():
     )
 
 
-def test_get_tok():
+def test_get_tok() -> None:
     """Test gettok for main tokens."""
     ArxIO.string_to_buffer(
         "fn math(x):\n"
@@ -64,7 +68,7 @@ def test_get_tok():
         "    return x * 20\n"
         "math(1)\n"
     )
-
+    Lexer.clean()
     assert Lexer.gettok() == Token(kind=TokenKind.kw_function, value="fn")
     assert Lexer.gettok() == Token(kind=TokenKind.identifier, value="math")
     assert Lexer.gettok() == Token(kind=TokenKind.operator, value="(")

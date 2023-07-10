@@ -2,7 +2,7 @@
 import sys
 
 
-def LogError(message: str):
+def LogError(message: str) -> None:
     """
     LogError - A helper function for error handling.
 

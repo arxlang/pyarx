@@ -23,7 +23,7 @@ class Parser:
     indent_level: int = 0
 
     @classmethod
-    def reset(cls):
+    def reset(cls) -> None:
         """Reset the Parser static variables."""
         cls.indent_level = 0
 

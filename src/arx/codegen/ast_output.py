@@ -7,7 +7,7 @@ from arx.parser import INDENT_SIZE
 class ASTtoOutput(CodeGenBase):
     """Show the AST for the given source code."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.indent: int = 0
         self.annotation: str = ""
 
@@ -21,7 +21,7 @@ class ASTtoOutput(CodeGenBase):
         """
         return " " * self.indent
 
-    def set_annotation(self, annotation: str):
+    def set_annotation(self, annotation: str) -> None:
         """
         Set the annotation for the visitor.
 
@@ -43,7 +43,7 @@ class ASTtoOutput(CodeGenBase):
         self.annotation = ""
         return annotation
 
-    def visit_block(self, expr: ast.BlockAST):
+    def visit_block(self, expr: ast.BlockAST) -> None:
         """
         Visit method for tree ast.
 
@@ -54,7 +54,7 @@ class ASTtoOutput(CodeGenBase):
         for node in expr.nodes:
             self.visit(node)
 
-    def visit_float_expr(self, expr: ast.FloatExprAST):
+    def visit_float_expr(self, expr: ast.FloatExprAST) -> None:
         """
         Visit a ast.FloatExprAST node.
 
@@ -66,7 +66,7 @@ class ASTtoOutput(CodeGenBase):
             f"{self.indentation()}{self.get_annotation()}(Number {expr.value})"
         )
 
-    def visit_variable_expr(self, expr: ast.VariableExprAST):
+    def visit_variable_expr(self, expr: ast.VariableExprAST) -> None:
         """
         Visit a ast.VariableExprAST node.
 
@@ -79,7 +79,7 @@ class ASTtoOutput(CodeGenBase):
             f"(ast.VariableExprAST {expr.name})"
         )
 
-    def visit_unary_expr(self, expr: ast.UnaryExprAST):
+    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> None:
         """
         Visit a ast.UnaryExprAST node.
 
@@ -89,7 +89,7 @@ class ASTtoOutput(CodeGenBase):
         """
         print("(ast.UnaryExprAST)")
 
-    def visit_binary_expr(self, expr: ast.BinaryExprAST):
+    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> None:
         """
         Visit a ast.BinaryExprAST node.
 
@@ -117,7 +117,7 @@ class ASTtoOutput(CodeGenBase):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_call_expr(self, expr: ast.CallExprAST):
+    def visit_call_expr(self, expr: ast.CallExprAST) -> None:
         """
         Visit a ast.CallExprAST node.
 
@@ -141,7 +141,7 @@ class ASTtoOutput(CodeGenBase):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_if_expr(self, expr: ast.IfStmtAST):
+    def visit_if_expr(self, expr: ast.IfStmtAST) -> None:
         """
         Visit an ast.IfStmtAST node.
 
@@ -177,7 +177,7 @@ class ASTtoOutput(CodeGenBase):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_for_expr(self, expr: ast.ForStmtAST):
+    def visit_for_expr(self, expr: ast.ForStmtAST) -> None:
         """
         Visit a ast.ForStmtAST node.
 
@@ -213,7 +213,7 @@ class ASTtoOutput(CodeGenBase):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_var_expr(self, expr: ast.VarExprAST):
+    def visit_var_expr(self, expr: ast.VarExprAST) -> None:
         """
         Visit a ast.VarExprAST node.
 
@@ -232,7 +232,7 @@ class ASTtoOutput(CodeGenBase):
 
         print(")")
 
-    def visit_prototype(self, expr: ast.PrototypeAST):
+    def visit_prototype(self, expr: ast.PrototypeAST) -> None:
         """
         Visit a ast.PrototypeAST node.
 
@@ -242,7 +242,7 @@ class ASTtoOutput(CodeGenBase):
         """
         print(f"(ast.PrototypeAST {expr.name})")
 
-    def visit_function(self, expr: ast.FunctionAST):
+    def visit_function(self, expr: ast.FunctionAST) -> None:
         """
         Visit a ast.FunctionAST node.
 
@@ -274,7 +274,7 @@ class ASTtoOutput(CodeGenBase):
         self.indent -= INDENT_SIZE
         print(f"{self.indentation()})")
 
-    def visit_return_expr(self, expr: ast.ReturnStmtAST):
+    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> None:
         """
         Visit a ast.ReturnStmtAST node.
 
@@ -284,7 +284,7 @@ class ASTtoOutput(CodeGenBase):
         """
         print(f"(ast.ReturnStmtAST {self.visit(expr.value)})")
 
-    def emit_ast(self, ast: ast.BlockAST):
+    def emit_ast(self, ast: ast.BlockAST) -> None:
         """Print the AST for the given source code."""
         print("[")
         self.indent += INDENT_SIZE

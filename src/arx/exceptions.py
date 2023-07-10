@@ -4,7 +4,7 @@
 class ParserException(Exception):
     """Handle exceptions for the Parser phase."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize ParserException."""
         super().__init__(f"ParserError: {message}")
 
@@ -12,6 +12,6 @@ class ParserException(Exception):
 class CodeGenException(Exception):
     """Handle exceptions for the CodeGen phase."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         """Initialize ParserException."""
         super().__init__(f"CodeGenError: {message}")

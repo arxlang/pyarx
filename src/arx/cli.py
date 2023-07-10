@@ -1,6 +1,8 @@
 """Functions and classes for handling the CLI call."""
 import argparse
 
+from typing import Optional, Any
+
 from arx import __version__
 from arx.main import ArxMain
 
@@ -14,12 +16,12 @@ class CustomHelpFormatter(argparse.RawTextHelpFormatter):
 
     def __init__(
         self,
-        prog,
-        indent_increment=2,
-        max_help_position=4,
-        width=None,
-        **kwargs,
-    ):
+        prog: str,
+        indent_increment: int = 2,
+        max_help_position: int = 4,
+        width: Optional[int] = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(
             prog,
             indent_increment=indent_increment,
@@ -29,7 +31,7 @@ class CustomHelpFormatter(argparse.RawTextHelpFormatter):
         )
 
 
-def get_args():
+def get_args() -> argparse.ArgumentParser:
     """Get the CLI arguments."""
     parser = argparse.ArgumentParser(
         prog="arx",
@@ -96,12 +98,12 @@ def get_args():
     return parser
 
 
-def show_version():
+def show_version() -> None:
     """Show the application version."""
     print(__version__)
 
 
-def app():
+def app() -> None:
     """Run the application."""
     args_parser = get_args()
     args = args_parser.parse_args()

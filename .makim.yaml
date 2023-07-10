@@ -28,7 +28,16 @@ groups:
 
       unittest:
         help: run tests
-        run: pytest -vv
+        args:
+          path:
+            help: Specify the location of the tests
+            type: string
+            default: ""
+          params:
+            help: Specify parameters to be used for tests
+            type: string
+            default: "-vv"
+        run: pytest {{ args.path }} {{ args.params }}
 
       smoke:
         help: run smoke tests
