@@ -21,6 +21,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.10"
 llvmlite = "^0.40.1"
+pyyaml = ">=4"
 
 [tool.poetry.group.dev.dependencies]
 urllib3 = "<2"  # fix poetry issues
@@ -65,6 +66,7 @@ warn_unused_configs = true
 module = [
   "llvmlite",
   "llvmlite.binding",
+  "yaml",
 ]
 ignore_missing_imports = true
 
