@@ -6,7 +6,7 @@ from typing import List, Any, Dict
 from llvmlite import binding as llvm
 
 from arx import ast
-from arx.codegen.base import CodeGenLLVMBase
+from arx.codegen.base import CodeGenLLVMBase, CodeGenResultType
 
 from arx.io import ArxFile, ArxIO
 from arx.parser import Parser
@@ -163,7 +163,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         compiler_cmd = linker_path + " " + " ".join(compiler_args)
 
         print("ARX[INFO]: ", compiler_cmd)
-        compile_result = os.system(compiler_cmd)
+        compile_result = os.system(compiler_cmd)  # nosec
 
         ArxFile.delete_file(main_cpp_path)
 
@@ -231,7 +231,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             self._llvm.get_data_type(type_name), None, var_name
         )
 
-    def visit_tree(self, tree: ast.BlockAST) -> List[Any]:
+    def visit_tree(self, tree: ast.BlockAST) -> List[CodeGenResultType]:
         """
         Walk the AST and generate code for each node.
 

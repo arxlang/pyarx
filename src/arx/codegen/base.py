@@ -1,19 +1,21 @@
 """Base module for code generation."""
-from typing import Any, Callable, Type, Dict
+from typing import Any, Callable, Type, Dict, TypeAlias, Union
 
 import llvmlite.binding as llvm
 
 from arx import ast
 from arx.exceptions import CodeGenException
 
+CodeGenResultType: TypeAlias = Union[llvm.ir.Value, llvm.ir.Function, None]
+
 
 class CodeGenBase:
     """A base Visitor pattern class."""
 
-    def visit(self, expr: ast.ExprAST) -> Any:
+    def visit(self, expr: ast.ExprAST) -> CodeGenResultType:
         """Call the correspondent visit function for the given expr type."""
         map_visit_expr: Dict[
-            Type[ast.ExprAST], Callable[[ast.ExprAST], llvm.ir.Value]
+            Type[ast.ExprAST], Callable[[Any], CodeGenResultType]
         ] = {
             ast.BinaryExprAST: self.visit_binary_expr,
             ast.CallExprAST: self.visit_call_expr,
@@ -33,55 +35,57 @@ class CodeGenBase:
 
         if not fn:
             print("Fail to downcasting ExprAST.")
-            return
+            return None
 
         return fn(expr)
 
-    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> Any:
+    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> CodeGenResultType:
         """Visit method for binary expression."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_call_expr(self, expr: ast.CallExprAST) -> Any:
+    def visit_call_expr(self, expr: ast.CallExprAST) -> CodeGenResultType:
         """Visit method for function call."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_float_expr(self, expr: ast.FloatExprAST) -> Any:
+    def visit_float_expr(self, expr: ast.FloatExprAST) -> CodeGenResultType:
         """Visit method for float."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_for_expr(self, expr: ast.ForStmtAST) -> Any:
+    def visit_for_expr(self, expr: ast.ForStmtAST) -> CodeGenResultType:
         """Visit method for `for` loop."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_function(self, expr: ast.FunctionAST) -> Any:
+    def visit_function(self, expr: ast.FunctionAST) -> CodeGenResultType:
         """Visit method for function definition."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_if_expr(self, expr: ast.IfStmtAST) -> Any:
+    def visit_if_expr(self, expr: ast.IfStmtAST) -> CodeGenResultType:
         """Visit method for if statement."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_prototype(self, expr: ast.PrototypeAST) -> Any:
+    def visit_prototype(self, expr: ast.PrototypeAST) -> CodeGenResultType:
         """Visit method for prototype."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> Any:
+    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> CodeGenResultType:
         """Visit method for expression."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_block(self, expr: ast.BlockAST) -> Any:
+    def visit_block(self, expr: ast.BlockAST) -> CodeGenResultType:
         """Visit method for tree ast."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> Any:
+    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> CodeGenResultType:
         """Visit method for unary expression."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_var_expr(self, expr: ast.VarExprAST) -> Any:
+    def visit_var_expr(self, expr: ast.VarExprAST) -> CodeGenResultType:
         """Visit method for variable declaration."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_variable_expr(self, expr: ast.VariableExprAST) -> Any:
+    def visit_variable_expr(
+        self, expr: ast.VariableExprAST
+    ) -> CodeGenResultType:
         """Visit method for variable usage."""
         raise CodeGenException("Not implemented yet.")
 
@@ -131,7 +135,8 @@ class VariablesLLVM:
 class CodeGenLLVMBase(CodeGenBase):
     """ArxLLVM gathers all the main global variables for LLVM workflow."""
 
-    named_values: Dict[str, Any] = {}  # AllocaInst
+    # AllocaInst
+    named_values: Dict[str, Any] = {}  # noqa: RUF012
     _llvm: VariablesLLVM
 
     def initialize(self) -> None:

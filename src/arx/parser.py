@@ -1,5 +1,5 @@
 """parser module gather all functions and classes for parsing."""
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, ClassVar
 
 from arx import ast
 from arx.exceptions import ParserException
@@ -11,7 +11,7 @@ INDENT_SIZE = 2
 class Parser:
     """Parser class."""
 
-    bin_op_precedence: Dict[str, int] = {
+    bin_op_precedence: ClassVar[Dict[str, int]] = {
         "=": 2,
         "<": 10,
         ">": 10,
@@ -346,7 +346,7 @@ class Parser:
         else:
             step = ast.FloatExprAST(1.0)
 
-        if Lexer.cur_tok.kind != TokenKind.kw_in:
+        if Lexer.cur_tok.kind != TokenKind.kw_in:  # type: ignore
             raise Exception("Parser: Expected 'in' after for")
         Lexer.get_next_token()  # eat 'in'.
 
@@ -396,7 +396,7 @@ class Parser:
                 raise Exception("Parser: Expected identifier list after var")
 
         # At this point, we have to have 'in'. #
-        if Lexer.cur_tok.kind != TokenKind.kw_in:
+        if Lexer.cur_tok.kind != TokenKind.kw_in:  # type: ignore
             raise Exception("Parser: Expected 'in' keyword after 'var'")
         Lexer.get_next_token()  # eat 'in'.
 

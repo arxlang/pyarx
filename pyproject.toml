@@ -19,7 +19,7 @@ packages = [
 "arx" = "arx.__main__:app"
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.10"
 llvmlite = "^0.40.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -52,6 +52,7 @@ testpaths = [
 ]
 
 [tool.mypy]
+python_version = "3.10"
 check_untyped_defs = true
 ignore_missing_imports = true
 no_strict_optional = false
@@ -91,7 +92,7 @@ targets = "src/arx"
 
 [tool.black]
 line-length = 79
-target-version = ["py38"]
+target-version = ["py39"]
 force-exclude = '''(?x)(
     docs/*
   | .*\\.egg-info
