@@ -1,7 +1,7 @@
 """Module for handling the lexer analysis."""
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, ClassVar, Dict
 
 from arx.io import ArxIO
 
@@ -162,7 +162,7 @@ class Lexer:
     last_char: str = ""
     new_line: bool = True
 
-    _keyword_map = {
+    _keyword_map: ClassVar[Dict[str, TokenKind]] = {
         "fn": TokenKind.kw_function,
         "extern": TokenKind.kw_extern,
         "return": TokenKind.kw_return,

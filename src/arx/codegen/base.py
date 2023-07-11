@@ -1,12 +1,13 @@
 """Base module for code generation."""
-from typing import Any, Callable, Type, Dict, TypeAlias, Union
+from typing import Any, Callable, Type, Dict, Union, TypeAlias
 
 import llvmlite.binding as llvm
+from llvmlite import ir
 
 from arx import ast
 from arx.exceptions import CodeGenException
 
-CodeGenResultType: TypeAlias = Union[llvm.ir.Value, llvm.ir.Function, None]
+CodeGenResultType: TypeAlias = Union[ir.Value, ir.Function, None]
 
 
 class CodeGenBase:
@@ -93,18 +94,18 @@ class CodeGenBase:
 class VariablesLLVM:
     """Store all the LLVM variables that is used for the code generation."""
 
-    FLOAT_TYPE: llvm.ir.types.Type
-    DOUBLE_TYPE: llvm.ir.types.Type
-    INT8_TYPE: llvm.ir.types.Type
-    INT32_TYPE: llvm.ir.types.Type
-    VOID_TYPE: llvm.ir.types.Type
+    FLOAT_TYPE: ir.types.Type
+    DOUBLE_TYPE: ir.types.Type
+    INT8_TYPE: ir.types.Type
+    INT32_TYPE: ir.types.Type
+    VOID_TYPE: ir.types.Type
 
-    context: llvm.ir.context.Context
-    module: llvm.ir.module.Module
+    context: ir.context.Context
+    module: ir.module.Module
 
-    ir_builder: llvm.ir.builder.IRBuilder
+    ir_builder: ir.builder.IRBuilder
 
-    def get_data_type(self, type_name: str) -> llvm.ir.types.Type:
+    def get_data_type(self, type_name: str) -> ir.types.Type:
         """
         Get the LLVM data type for the given type name.
 
@@ -141,9 +142,9 @@ class CodeGenLLVMBase(CodeGenBase):
 
     def initialize(self) -> None:
         """Initialize self."""
-        # self._llvm.context = llvm.ir.context.Context()
+        # self._llvm.context = ir.context.Context()
         self._llvm = VariablesLLVM()
-        self._llvm.module = llvm.ir.module.Module("Arx")
+        self._llvm.module = ir.module.Module("Arx")
 
         # initialize the target registry etc.
         llvm.initialize()
@@ -154,14 +155,14 @@ class CodeGenLLVMBase(CodeGenBase):
         llvm.initialize_native_asmprinter()
 
         # Create a new builder for the module.
-        self._llvm.ir_builder = llvm.ir.IRBuilder()
+        self._llvm.ir_builder = ir.IRBuilder()
 
         # Data Types
-        self._llvm.FLOAT_TYPE = llvm.ir.FloatType()
-        self._llvm.DOUBLE_TYPE = llvm.ir.DoubleType()
-        self._llvm.INT8_TYPE = llvm.ir.IntType(8)
-        self._llvm.INT32_TYPE = llvm.ir.IntType(32)
-        self._llvm.VOID_TYPE = llvm.ir.VoidType()
+        self._llvm.FLOAT_TYPE = ir.FloatType()
+        self._llvm.DOUBLE_TYPE = ir.DoubleType()
+        self._llvm.INT8_TYPE = ir.IntType(8)
+        self._llvm.INT32_TYPE = ir.IntType(32)
+        self._llvm.VOID_TYPE = ir.VoidType()
 
     def evaluate(self, tree: ast.BlockAST) -> None:
         """Evaluate the given AST object."""

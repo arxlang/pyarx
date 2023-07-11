@@ -4,6 +4,7 @@ import os
 from typing import List, Any, Dict
 
 from llvmlite import binding as llvm
+from llvmlite import ir
 
 from arx import ast
 from arx.codegen.base import CodeGenLLVMBase, CodeGenResultType
@@ -40,7 +41,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         self.is_lib = is_lib
 
         self.function_protos: Dict[str, ast.PrototypeAST] = {}
-        self.module = llvm.ir.Module()
+        self.module = ir.Module()
 
         super().initialize()
 
@@ -60,25 +61,25 @@ class ObjectGenerator(CodeGenLLVMBase):
         # This is what this method does.
 
         # Add the declaration of putchar
-        putchar_ty = llvm.ir.FunctionType(
+        putchar_ty = ir.FunctionType(
             self._llvm.INT32_TYPE, [self._llvm.INT32_TYPE]
         )
-        putchar = llvm.ir.Function(self._llvm.module, putchar_ty, "putchar")
+        putchar = ir.Function(self._llvm.module, putchar_ty, "putchar")
 
         # Add putchard
-        putchard_ty = llvm.ir.FunctionType(
+        putchard_ty = ir.FunctionType(
             self._llvm.FLOAT_TYPE, [self._llvm.FLOAT_TYPE]
         )
-        putchard = llvm.ir.Function(self._llvm.module, putchard_ty, "putchard")
+        putchard = ir.Function(self._llvm.module, putchard_ty, "putchard")
 
-        ir_builder = llvm.ir.IRBuilder(putchard.append_basic_block("entry"))
+        ir_builder = ir.IRBuilder(putchard.append_basic_block("entry"))
 
         ival = ir_builder.fptoui(
             putchard.args[0], self._llvm.INT32_TYPE, "intcast"
         )
 
         ir_builder.call(putchar, [ival])
-        ir_builder.ret(llvm.ir.Constant(self._llvm.FLOAT_TYPE, 0))
+        ir_builder.ret(ir.Constant(self._llvm.FLOAT_TYPE, 0))
 
     def evaluate(
         self, block_ast: ast.BlockAST, show_llvm_ir: bool = False
@@ -190,7 +191,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             except KeyboardInterrupt:
                 break
 
-    def get_function(self, name: str) -> llvm.ir.Function:
+    def get_function(self, name: str) -> ir.Function:
         """
         Put the function defined by the given name to result_func.
 
@@ -223,7 +224,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         -------
           An llvm allocation instance.
         """
-        tmp_builder = llvm.ir.IRBuilder()
+        tmp_builder = ir.IRBuilder()
         tmp_builder.position_at_start(
             self._llvm.ir_builder.function.entry_basic_block
         )
@@ -246,7 +247,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             result.append(self.visit(node))
         return result
 
-    def visit_float_expr(self, expr: ast.FloatExprAST) -> llvm.ir.Value:
+    def visit_float_expr(self, expr: ast.FloatExprAST) -> ir.Value:
         """
         Code generation for ast.FloatExprAST.
 
@@ -254,9 +255,9 @@ class ObjectGenerator(CodeGenLLVMBase):
         ----------
             expr: The ast.FloatExprAST instance
         """
-        return llvm.ir.Constant(self._llvm.FLOAT_TYPE, expr.value)
+        return ir.Constant(self._llvm.FLOAT_TYPE, expr.value)
 
-    def visit_variable_expr(self, expr: ast.VariableExprAST) -> llvm.ir.Value:
+    def visit_variable_expr(self, expr: ast.VariableExprAST) -> ir.Value:
         """
         Code generation for ast.VariableExprAST.
 
@@ -272,7 +273,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return self._llvm.ir_builder.load(expr_var, expr.name)
 
-    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> llvm.ir.Value:
+    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> ir.Value:
         """
         Code generation for ast.UnaryExprAST.
 
@@ -290,7 +291,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return self._llvm.ir_builder.call(fn, [operand_value], "unop")
 
-    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> llvm.ir.Value:
+    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> ir.Value:
         """
         Code generation for ast.BinaryExprAST.
 
@@ -360,7 +361,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         fn = self.get_function("binary" + expr.op)
         return self._llvm.ir_builder.call(fn, [llvm_lhs, llvm_rhs], "binop")
 
-    def visit_call_expr(self, expr: ast.CallExprAST) -> llvm.ir.Value:
+    def visit_call_expr(self, expr: ast.CallExprAST) -> ir.Value:
         """
         Code generation for ast.CallExprAST.
 
@@ -385,7 +386,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return self._llvm.ir_builder.call(callee_f, llvm_args, "calltmp")
 
-    def visit_if_expr(self, expr: ast.IfStmtAST) -> llvm.ir.Value:
+    def visit_if_expr(self, expr: ast.IfStmtAST) -> ir.Value:
         """
         Code generation for ast.IfStmtAST.
 
@@ -402,17 +403,17 @@ class ObjectGenerator(CodeGenLLVMBase):
         cond_v = self._llvm.ir_builder.fcmp_ordered(
             "!=",
             cond_v,
-            llvm.ir.Constant(self._llvm.FLOAT_TYPE, 0.0),
+            ir.Constant(self._llvm.FLOAT_TYPE, 0.0),
         )
 
         # fn = self._llvm.ir_builder.position_at_start().getParent()
 
         # Create blocks for the then and else cases. Insert the 'then' block
         # at the end of the function.
-        # then_bb = llvm.ir.Block(self._llvm.ir_builder.function, "then", fn)
+        # then_bb = ir.Block(self._llvm.ir_builder.function, "then", fn)
         then_bb = self._llvm.ir_builder.function.append_basic_block("then")
-        else_bb = llvm.ir.Block(self._llvm.ir_builder.function, "else")
-        merge_bb = llvm.ir.Block(self._llvm.ir_builder.function, "ifcont")
+        else_bb = ir.Block(self._llvm.ir_builder.function, "else")
+        merge_bb = ir.Block(self._llvm.ir_builder.function, "ifcont")
 
         self._llvm.ir_builder.cbranch(cond_v, then_bb, else_bb)
 
@@ -450,7 +451,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return phi
 
-    def visit_for_expr(self, expr: ast.ForStmtAST) -> llvm.ir.Value:
+    def visit_for_expr(self, expr: ast.ForStmtAST) -> ir.Value:
         """
         Code generation for ast.ForStmtAST.
 
@@ -502,7 +503,7 @@ class ObjectGenerator(CodeGenLLVMBase):
                 return
         else:
             # If not specified, use 1.0.
-            step_val = llvm.ir.Constant(self._llvm.FLOAT_TYPE, 1.0)
+            step_val = ir.Constant(self._llvm.FLOAT_TYPE, 1.0)
 
         # Compute the end condition.
         end_cond = self.visit(expr.end)
@@ -519,7 +520,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         end_cond = self._llvm.ir_builder.fcmp_ordered(
             "!=",
             end_cond,
-            llvm.ir.Constant(self._llvm.DOUBLE_TYPE, 0.0),
+            ir.Constant(self._llvm.DOUBLE_TYPE, 0.0),
             "loopcond",
         )
 
@@ -541,9 +542,9 @@ class ObjectGenerator(CodeGenLLVMBase):
             self.named_values.pop(expr.var_name, None)
 
         # for expr always returns 0.0.
-        return llvm.ir.Constant(self._llvm.FLOAT_TYPE, 0.0)
+        return ir.Constant(self._llvm.FLOAT_TYPE, 0.0)
 
-    def visit_var_expr(self, expr: ast.VarExprAST) -> llvm.ir.Value:
+    def visit_var_expr(self, expr: ast.VarExprAST) -> ir.Value:
         """
         Code generation for ast.VarExprAST.
 
@@ -553,7 +554,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         """
         raise Exception(f"CodeGen for {expr} not implemented yet.")
 
-    def visit_prototype(self, expr: ast.PrototypeAST) -> llvm.ir.Function:
+    def visit_prototype(self, expr: ast.PrototypeAST) -> ir.Function:
         """
         Code generation for PrototypeExprAST.
 
@@ -563,9 +564,9 @@ class ObjectGenerator(CodeGenLLVMBase):
         """
         args_type = [self._llvm.FLOAT_TYPE] * len(expr.args)
         return_type = self._llvm.get_data_type("float")
-        fn_type = llvm.ir.FunctionType(return_type, args_type, False)
+        fn_type = ir.FunctionType(return_type, args_type, False)
 
-        fn = llvm.ir.Function(self._llvm.module, fn_type, expr.name)
+        fn = ir.Function(self._llvm.module, fn_type, expr.name)
 
         # Set names for all arguments.
         for idx, arg in enumerate(fn.args):
@@ -573,7 +574,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return fn
 
-    def visit_function(self, expr: ast.FunctionAST) -> llvm.ir.Function:
+    def visit_function(self, expr: ast.FunctionAST) -> ir.Function:
         """
         Code generation for FunctionExprAST.
 
@@ -593,7 +594,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         # Create a new basic block to start insertion into.
         basic_block = fn.append_basic_block("entry")
-        self._llvm.ir_builder = llvm.ir.IRBuilder(basic_block)
+        self._llvm.ir_builder = ir.IRBuilder(basic_block)
 
         for llvm_arg in fn.args:
             # Create an alloca for this variable.
@@ -613,12 +614,10 @@ class ObjectGenerator(CodeGenLLVMBase):
         if retval:
             self._llvm.ir_builder.ret(retval)
         else:
-            self._llvm.ir_builder.ret(
-                llvm.ir.Constant(self._llvm.FLOAT_TYPE, 0)
-            )
+            self._llvm.ir_builder.ret(ir.Constant(self._llvm.FLOAT_TYPE, 0))
         return fn
 
-    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> llvm.ir.Value:
+    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> ir.Value:
         """
         Code generation for ast.ReturnStmtAST.
 
