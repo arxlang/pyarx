@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from arx.io import ArxIO
+from arx.lexer import Lexer
 from arx.parser import Parser
 from arx.codegen.file_object import ObjectGenerator
 
@@ -14,20 +15,14 @@ PROJECT_PATH = Path(__file__).parent.parent.resolve()
     [
         "1 + 1",
         "1 + 2 * (3 - 2)",
-        """
-        if (1 < 2):
-            3
-        else:
-            2
-        """,
-        """
-        fn add_one(a):
-            a + 1
-        add_one(1)
-        """,
+        "if (1 < 2):\n" "    3\n" "else:\n" "    2\n",
+        "fn add_one(a):\n" "    a + 1\n" "add_one(1)\n",
     ],
 )
-def test_objeject_generation(code: str) -> None:
+@pytest.mark.skip(reason="codegen with llvm is paused for now")
+def test_object_generation(code: str) -> None:
+    Lexer.clean()
+    Parser.clean()
     ArxIO.string_to_buffer(code)
     ast = Parser.parse()
     objgen = ObjectGenerator()

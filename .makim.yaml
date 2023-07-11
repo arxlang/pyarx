@@ -41,25 +41,76 @@ groups:
 
       smoke:
         help: run smoke tests
+        dependencies:
+          - target: examples.show-tokens
+            args:
+              examples: constant,average,fibonacci,print-star,sum
+          - target: examples.show-ast
+            args:
+              examples: constant,average,fibonacci,print-star,sum
+          # note: the development of the backend will be stopped for now
+          # - target: examples.show-llvm-ir
+          #   args:
+          #     examples: constant,average,fibonacci,print-star,sum
+          # - target: examples.emit-object
+          #   args:
+          #     examples: constant,average,fibonacci,print-star,sum
         run: |
-          input_files = [
-            'constant',
-            'average',
-            'fibonacci',
-            'print-star',
-            'sum',
-          ]
-          for filename in input_files:
-            print("=" * 80)
-            print(filename)
-            print("=" * 80)
+          arx --help
+          arx --version
+      ci:
+        help: run the sames tests executed on CI
+        dependencies:
+          - target: tests.unittest
+          - target: tests.smoke
+          - target: tests.linter
 
-            arx --help
-            arx --version
-            arx --show-tokens --input-file examples/@(filename).arx
-            arx --show-ast --input-file examples/@(filename).arx
-            arx --show-llvm-ir --input-file examples/@(filename).arx
-            arx --input-file examples/@(filename).arx
+  examples:
+    targets:
+      show-tokens:
+        help: Emit tokens for input file
+        args:
+          examples:
+            help: The examples name separated by comma `,`
+            type: string
+            required: true
+        run: |
+          for name in "{{ args.examples }}".split(","):
+            print(f" show tokens: {name} ".center(80, "="))
+            arx --show-tokens --input-file examples/@(name).arx
+      show-ast:
+        help: Emit ast for input file
+        args:
+          examples:
+            help: The examples name separated by comma `,`
+            type: string
+            required: true
+        run: |
+          for name in "{{ args.examples }}".split(","):
+            print(f" show ast: {name} ".center(80, "="))
+            arx --show-ast --input-file examples/@(name).arx
+      show-llvm-ir:
+        help: Emit ast for input file
+        args:
+          examples:
+            help: The examples name separated by comma `,`
+            type: string
+            required: true
+        run: |
+          for name in "{{ args.examples }}".split(","):
+            print(f" show llvm ir: {name} ".center(80, "="))
+            arx --show-llvm-ir --input-file examples/@(name).arx
+      emit-object:
+        help: Emit ast for input file
+        args:
+          examples:
+            help: The examples name separated by comma `,`
+            type: string
+            required: true
+        run: |
+          for name in "{{ args.examples }}".split(","):
+            print(f" emit object: {name} ".center(80, "="))
+            arx --input-file examples/@(name).arx
 
 
   docs:

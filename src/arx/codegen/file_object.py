@@ -96,7 +96,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             int: The compilation result.
         """
         logging.info("Starting main_loop")
-        self.visit_tree(block_ast)
+        self.emit_object(block_ast)
 
         # Convert LLVM IR into in-memory representation
         if show_llvm_ir:
@@ -232,7 +232,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             self._llvm.get_data_type(type_name), None, var_name
         )
 
-    def visit_tree(self, tree: ast.BlockAST) -> List[CodeGenResultType]:
+    def emit_object(self, tree: ast.BlockAST) -> List[CodeGenResultType]:
         """
         Walk the AST and generate code for each node.
 
@@ -242,10 +242,7 @@ class ObjectGenerator(CodeGenLLVMBase):
         ----------
             tree: The ast.BlockAST instance.
         """
-        result = []
-        for node in tree.nodes:
-            result.append(self.visit(node))
-        return result
+        return self.visit_block(tree)
 
     def visit_float_expr(self, expr: ast.FloatExprAST) -> ir.Value:
         """
@@ -361,6 +358,13 @@ class ObjectGenerator(CodeGenLLVMBase):
         fn = self.get_function("binary" + expr.op)
         return self._llvm.ir_builder.call(fn, [llvm_lhs, llvm_rhs], "binop")
 
+    def visit_block(self, expr: ast.BlockAST) -> List[CodeGenResultType]:
+        """Visit method for BlockAST."""
+        result = []
+        for node in expr.nodes:
+            result.append(self.visit(node))
+        return result
+
     def visit_call_expr(self, expr: ast.CallExprAST) -> ir.Value:
         """
         Code generation for ast.CallExprAST.
@@ -386,7 +390,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return self._llvm.ir_builder.call(callee_f, llvm_args, "calltmp")
 
-    def visit_if_expr(self, expr: ast.IfStmtAST) -> ir.Value:
+    def visit_if_stmt(self, expr: ast.IfStmtAST) -> ir.Value:
         """
         Code generation for ast.IfStmtAST.
 
@@ -451,7 +455,7 @@ class ObjectGenerator(CodeGenLLVMBase):
 
         return phi
 
-    def visit_for_expr(self, expr: ast.ForStmtAST) -> ir.Value:
+    def visit_for_stmt(self, expr: ast.ForStmtAST) -> ir.Value:
         """
         Code generation for ast.ForStmtAST.
 
@@ -617,7 +621,7 @@ class ObjectGenerator(CodeGenLLVMBase):
             self._llvm.ir_builder.ret(ir.Constant(self._llvm.FLOAT_TYPE, 0))
         return fn
 
-    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> ir.Value:
+    def visit_return_stmt(self, expr: ast.ReturnStmtAST) -> ir.Value:
         """
         Code generation for ast.ReturnStmtAST.
 

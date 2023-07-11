@@ -6,7 +6,7 @@ from arx.parser import Parser
 
 def test_binop_precedence() -> None:
     """Test BinOp precedence."""
-    Parser.reset()
+    Parser.clean()
 
     assert Parser.bin_op_precedence["="] == 2
     assert Parser.bin_op_precedence["<"] == 10
@@ -19,7 +19,7 @@ def test_binop_precedence() -> None:
 def test_parse_float_expr() -> None:
     """Test gettok for main tokens"""
     ArxIO.string_to_buffer("1 2")
-    Parser.reset()
+    Parser.clean()
 
     Lexer.get_next_token()
     expr = Parser.parse_float_expr()
@@ -43,7 +43,7 @@ def test_parse_float_expr() -> None:
 
 def test_parse() -> None:
     """Test gettok for main tokens."""
-    Parser.reset()
+    Parser.clean()
     ArxIO.string_to_buffer(
         "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
     )
@@ -55,7 +55,7 @@ def test_parse() -> None:
 
 def test_parse_if_stmt() -> None:
     """Test gettok for main tokens."""
-    Parser.reset()
+    Parser.clean()
     ArxIO.string_to_buffer(
         "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
     )
@@ -73,7 +73,7 @@ def test_parse_if_stmt() -> None:
 
 def test_parse_fn() -> None:
     """Test gettok for main tokens."""
-    Parser.reset()
+    Parser.clean()
     ArxIO.string_to_buffer(
         "fn math(x):\n"
         + "  if 1 > 2:\n"

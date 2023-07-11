@@ -1,4 +1,6 @@
 """Set of classes and functions to emit the AST from a given source code."""
+from typing import List
+
 from arx.codegen.base import CodeGenBase, CodeGenResultType
 from arx import ast
 from arx.parser import INDENT_SIZE
@@ -43,7 +45,7 @@ class ASTtoOutput(CodeGenBase):
         self.annotation = ""
         return annotation
 
-    def visit_block(self, expr: ast.BlockAST) -> CodeGenResultType:
+    def visit_block(self, expr: ast.BlockAST) -> List[CodeGenResultType]:
         """
         Visit method for tree ast.
 
@@ -53,7 +55,7 @@ class ASTtoOutput(CodeGenBase):
         """
         for node in expr.nodes:
             self.visit(node)
-        return None
+        return []
 
     def visit_float_expr(self, expr: ast.FloatExprAST) -> CodeGenResultType:
         """
@@ -149,7 +151,7 @@ class ASTtoOutput(CodeGenBase):
         print(f"{self.indentation()})")
         return None
 
-    def visit_if_expr(self, expr: ast.IfStmtAST) -> CodeGenResultType:
+    def visit_if_stmt(self, expr: ast.IfStmtAST) -> CodeGenResultType:
         """
         Visit an ast.IfStmtAST node.
 
@@ -186,7 +188,7 @@ class ASTtoOutput(CodeGenBase):
         print(f"{self.indentation()})")
         return None
 
-    def visit_for_expr(self, expr: ast.ForStmtAST) -> CodeGenResultType:
+    def visit_for_stmt(self, expr: ast.ForStmtAST) -> CodeGenResultType:
         """
         Visit a ast.ForStmtAST node.
 
@@ -287,7 +289,7 @@ class ASTtoOutput(CodeGenBase):
         print(f"{self.indentation()})")
         return None
 
-    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> CodeGenResultType:
+    def visit_return_stmt(self, expr: ast.ReturnStmtAST) -> CodeGenResultType:
         """
         Visit a ast.ReturnStmtAST node.
 

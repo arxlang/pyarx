@@ -23,7 +23,7 @@ class Parser:
     indent_level: int = 0
 
     @classmethod
-    def reset(cls) -> None:
+    def clean(cls) -> None:
         """Reset the Parser static variables."""
         cls.indent_level = 0
 
@@ -37,7 +37,7 @@ class Parser:
         ast.BlockAST
             The parsed abstract syntax tree (AST), or None if parsing fails.
         """
-        cls.reset()
+        cls.clean()
 
         tree: ast.BlockAST = ast.BlockAST()
         Lexer.get_next_token()

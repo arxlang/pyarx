@@ -1,5 +1,5 @@
 """Base module for code generation."""
-from typing import Any, Callable, Type, Dict, Union, TypeAlias
+from typing import Any, Callable, Type, Dict, List, Union, TypeAlias
 
 import llvmlite.binding as llvm
 from llvmlite import ir
@@ -21,11 +21,11 @@ class CodeGenBase:
             ast.BinaryExprAST: self.visit_binary_expr,
             ast.CallExprAST: self.visit_call_expr,
             ast.FloatExprAST: self.visit_float_expr,
-            ast.ForStmtAST: self.visit_for_expr,
+            ast.ForStmtAST: self.visit_for_stmt,
             ast.FunctionAST: self.visit_function,
-            ast.IfStmtAST: self.visit_if_expr,
+            ast.IfStmtAST: self.visit_if_stmt,
             ast.PrototypeAST: self.visit_prototype,
-            ast.ReturnStmtAST: self.visit_return_expr,
+            ast.ReturnStmtAST: self.visit_return_stmt,
             ast.BlockAST: self.visit_block,
             ast.UnaryExprAST: self.visit_unary_expr,
             ast.VarExprAST: self.visit_var_expr,
@@ -44,6 +44,10 @@ class CodeGenBase:
         """Visit method for binary expression."""
         raise CodeGenException("Not implemented yet.")
 
+    def visit_block(self, expr: ast.BlockAST) -> List[CodeGenResultType]:
+        """Visit method for tree ast."""
+        raise CodeGenException("Not implemented yet.")
+
     def visit_call_expr(self, expr: ast.CallExprAST) -> CodeGenResultType:
         """Visit method for function call."""
         raise CodeGenException("Not implemented yet.")
@@ -52,7 +56,7 @@ class CodeGenBase:
         """Visit method for float."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_for_expr(self, expr: ast.ForStmtAST) -> CodeGenResultType:
+    def visit_for_stmt(self, expr: ast.ForStmtAST) -> CodeGenResultType:
         """Visit method for `for` loop."""
         raise CodeGenException("Not implemented yet.")
 
@@ -60,7 +64,7 @@ class CodeGenBase:
         """Visit method for function definition."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_if_expr(self, expr: ast.IfStmtAST) -> CodeGenResultType:
+    def visit_if_stmt(self, expr: ast.IfStmtAST) -> CodeGenResultType:
         """Visit method for if statement."""
         raise CodeGenException("Not implemented yet.")
 
@@ -68,12 +72,8 @@ class CodeGenBase:
         """Visit method for prototype."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_return_expr(self, expr: ast.ReturnStmtAST) -> CodeGenResultType:
+    def visit_return_stmt(self, expr: ast.ReturnStmtAST) -> CodeGenResultType:
         """Visit method for expression."""
-        raise CodeGenException("Not implemented yet.")
-
-    def visit_block(self, expr: ast.BlockAST) -> CodeGenResultType:
-        """Visit method for tree ast."""
         raise CodeGenException("Not implemented yet.")
 
     def visit_unary_expr(self, expr: ast.UnaryExprAST) -> CodeGenResultType:
