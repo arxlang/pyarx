@@ -1,2 +1,2 @@
 fn get_constant(x):
-  x;
+  return x;

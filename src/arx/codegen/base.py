@@ -1,26 +1,32 @@
 """Base module for code generation."""
-from typing import Any, Callable, Type, Dict
+from typing import Any, Callable, Type, Dict, List, Union, TypeAlias
 
 import llvmlite.binding as llvm
+from llvmlite import ir
 
 from arx import ast
+from arx.exceptions import CodeGenException
+
+CodeGenResultType: TypeAlias = Union[ir.Value, ir.Function, None]
 
 
 class CodeGenBase:
     """A base Visitor pattern class."""
 
-    def visit(self, expr: ast.ExprAST) -> Any:
+    def visit(self, expr: ast.ExprAST) -> CodeGenResultType:
         """Call the correspondent visit function for the given expr type."""
-        map_visit_expr: Dict[Type[ast.ExprAST], Callable] = {
+        map_visit_expr: Dict[
+            Type[ast.ExprAST], Callable[[Any], CodeGenResultType]
+        ] = {
             ast.BinaryExprAST: self.visit_binary_expr,
             ast.CallExprAST: self.visit_call_expr,
             ast.FloatExprAST: self.visit_float_expr,
-            ast.ForExprAST: self.visit_for_expr,
+            ast.ForStmtAST: self.visit_for_stmt,
             ast.FunctionAST: self.visit_function,
-            ast.IfExprAST: self.visit_if_expr,
+            ast.IfStmtAST: self.visit_if_stmt,
             ast.PrototypeAST: self.visit_prototype,
-            ast.ReturnExprAST: self.visit_return_expr,
-            ast.TreeAST: self.visit_tree,
+            ast.ReturnStmtAST: self.visit_return_stmt,
+            ast.BlockAST: self.visit_block,
             ast.UnaryExprAST: self.visit_unary_expr,
             ast.VarExprAST: self.visit_var_expr,
             ast.VariableExprAST: self.visit_variable_expr,
@@ -30,74 +36,76 @@ class CodeGenBase:
 
         if not fn:
             print("Fail to downcasting ExprAST.")
-            return
+            return None
 
         return fn(expr)
 
-    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> Any:
+    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> CodeGenResultType:
         """Visit method for binary expression."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
-    def visit_call_expr(self, expr: ast.CallExprAST) -> Any:
-        """Visit method for function call."""
-        raise Exception("Not implemented yet.")
-
-    def visit_float_expr(self, expr: ast.FloatExprAST) -> Any:
-        """Visit method for float."""
-        raise Exception("Not implemented yet.")
-
-    def visit_for_expr(self, expr: ast.ForExprAST) -> Any:
-        """Visit method for `for` loop."""
-        raise Exception("Not implemented yet.")
-
-    def visit_function(self, expr: ast.FunctionAST) -> Any:
-        """Visit method for function definition."""
-        raise Exception("Not implemented yet.")
-
-    def visit_if_expr(self, expr: ast.IfExprAST) -> Any:
-        """Visit method for if statement."""
-        raise Exception("Not implemented yet.")
-
-    def visit_prototype(self, expr: ast.PrototypeAST) -> Any:
-        """Visit method for prototype."""
-        raise Exception("Not implemented yet.")
-
-    def visit_return_expr(self, expr: ast.ReturnExprAST) -> Any:
-        """Visit method for expression."""
-        raise Exception("Not implemented yet.")
-
-    def visit_tree(self, expr: ast.TreeAST) -> Any:
+    def visit_block(self, expr: ast.BlockAST) -> List[CodeGenResultType]:
         """Visit method for tree ast."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
-    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> Any:
+    def visit_call_expr(self, expr: ast.CallExprAST) -> CodeGenResultType:
+        """Visit method for function call."""
+        raise CodeGenException("Not implemented yet.")
+
+    def visit_float_expr(self, expr: ast.FloatExprAST) -> CodeGenResultType:
+        """Visit method for float."""
+        raise CodeGenException("Not implemented yet.")
+
+    def visit_for_stmt(self, expr: ast.ForStmtAST) -> CodeGenResultType:
+        """Visit method for `for` loop."""
+        raise CodeGenException("Not implemented yet.")
+
+    def visit_function(self, expr: ast.FunctionAST) -> CodeGenResultType:
+        """Visit method for function definition."""
+        raise CodeGenException("Not implemented yet.")
+
+    def visit_if_stmt(self, expr: ast.IfStmtAST) -> CodeGenResultType:
+        """Visit method for if statement."""
+        raise CodeGenException("Not implemented yet.")
+
+    def visit_prototype(self, expr: ast.PrototypeAST) -> CodeGenResultType:
+        """Visit method for prototype."""
+        raise CodeGenException("Not implemented yet.")
+
+    def visit_return_stmt(self, expr: ast.ReturnStmtAST) -> CodeGenResultType:
+        """Visit method for expression."""
+        raise CodeGenException("Not implemented yet.")
+
+    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> CodeGenResultType:
         """Visit method for unary expression."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
-    def visit_var_expr(self, expr: ast.VarExprAST) -> Any:
+    def visit_var_expr(self, expr: ast.VarExprAST) -> CodeGenResultType:
         """Visit method for variable declaration."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
-    def visit_variable_expr(self, expr: ast.VariableExprAST) -> Any:
+    def visit_variable_expr(
+        self, expr: ast.VariableExprAST
+    ) -> CodeGenResultType:
         """Visit method for variable usage."""
-        raise Exception("Not implemented yet.")
+        raise CodeGenException("Not implemented yet.")
 
 
 class VariablesLLVM:
     """Store all the LLVM variables that is used for the code generation."""
 
-    FLOAT_TYPE: llvm.ir.types.Type
-    DOUBLE_TYPE: llvm.ir.types.Type
-    INT8_TYPE: llvm.ir.types.Type
-    INT32_TYPE: llvm.ir.types.Type
-    VOID_TYPE: llvm.ir.types.Type
+    FLOAT_TYPE: ir.types.Type
+    DOUBLE_TYPE: ir.types.Type
+    INT8_TYPE: ir.types.Type
+    INT32_TYPE: ir.types.Type
+    VOID_TYPE: ir.types.Type
 
-    context: llvm.ir.context.Context
-    module: llvm.ir.module.Module
+    context: ir.context.Context
+    module: ir.module.Module
 
-    ir_builder: llvm.ir.builder.IRBuilder
+    ir_builder: ir.builder.IRBuilder
 
-    def get_data_type(self, type_name: str) -> llvm.ir.types.Type:
+    def get_data_type(self, type_name: str) -> ir.types.Type:
         """
         Get the LLVM data type for the given type name.
 
@@ -122,20 +130,21 @@ class VariablesLLVM:
         elif type_name == "void":
             return self.VOID_TYPE
 
-        raise Exception("[EE] CodeGen(LLVM): type_name not valid.")
+        raise CodeGenException("[EE] CodeGen(LLVM): type_name not valid.")
 
 
 class CodeGenLLVMBase(CodeGenBase):
     """ArxLLVM gathers all the main global variables for LLVM workflow."""
 
-    named_values: Dict[str, Any] = {}  # AllocaInst
+    # AllocaInst
+    named_values: Dict[str, Any] = {}  # noqa: RUF012
     _llvm: VariablesLLVM
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize self."""
-        # self._llvm.context = llvm.ir.context.Context()
+        # self._llvm.context = ir.context.Context()
         self._llvm = VariablesLLVM()
-        self._llvm.module = llvm.ir.module.Module("Arx")
+        self._llvm.module = ir.module.Module("Arx")
 
         # initialize the target registry etc.
         llvm.initialize()
@@ -146,15 +155,15 @@ class CodeGenLLVMBase(CodeGenBase):
         llvm.initialize_native_asmprinter()
 
         # Create a new builder for the module.
-        self._llvm.ir_builder = llvm.ir.IRBuilder()
+        self._llvm.ir_builder = ir.IRBuilder()
 
         # Data Types
-        self._llvm.FLOAT_TYPE = llvm.ir.FloatType()
-        self._llvm.DOUBLE_TYPE = llvm.ir.DoubleType()
-        self._llvm.INT8_TYPE = llvm.ir.IntType(8)
-        self._llvm.INT32_TYPE = llvm.ir.IntType(32)
-        self._llvm.VOID_TYPE = llvm.ir.VoidType()
+        self._llvm.FLOAT_TYPE = ir.FloatType()
+        self._llvm.DOUBLE_TYPE = ir.DoubleType()
+        self._llvm.INT8_TYPE = ir.IntType(8)
+        self._llvm.INT32_TYPE = ir.IntType(32)
+        self._llvm.VOID_TYPE = ir.VoidType()
 
-    def evaluate(self, tree: ast.TreeAST):
+    def evaluate(self, tree: ast.BlockAST) -> None:
         """Evaluate the given AST object."""
-        raise Exception(f"Not an evaluation for {tree} implement yet.")
+        raise CodeGenException(f"Not an evaluation for {tree} implement yet.")

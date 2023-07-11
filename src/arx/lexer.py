@@ -1,7 +1,7 @@
 """Module for handling the lexer analysis."""
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, ClassVar, Dict
 
 from arx.io import ArxIO
 
@@ -55,6 +55,10 @@ class TokenKind(Enum):
     kw_var: int = -40
     kw_const: int = -41
 
+    # flow and structure control
+    indent = -50
+    dedent = -51
+
     # generic control
     not_initialized: int = -9999
 
@@ -80,6 +84,7 @@ MAP_KW_TOKEN_TO_NAME: Dict[TokenKind, str] = {
     TokenKind.kw_return: "return",
     TokenKind.kw_extern: "extern",
     TokenKind.identifier: "identifier",
+    TokenKind.indent: "indent",
     TokenKind.float_literal: "float",
     TokenKind.kw_if: "if",
     TokenKind.kw_then: "then",
@@ -125,13 +130,14 @@ class Token:
             str: The string representation of the token value.
         """
         if self.kind == TokenKind.identifier:
-            return "(" + self.value + ")"
+            return "(" + str(self.value) + ")"
+        if self.kind == TokenKind.indent:
+            return "(" + str(self.value) + ")"
         elif self.kind == TokenKind.float_literal:
             return "(" + str(self.value) + ")"
-        else:
-            return ""
+        return ""
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Display the token in a readable way."""
         return f"{self.get_name()}{self.get_display_value()}"
 
@@ -154,10 +160,12 @@ class Lexer:
     cur_tok: Token
     lex_loc: SourceLocation = SourceLocation(0, 0)
     last_char: str = ""
+    new_line: bool = True
 
-    _keyword_map = {
+    _keyword_map: ClassVar[Dict[str, TokenKind]] = {
         "fn": TokenKind.kw_function,
         "extern": TokenKind.kw_extern,
+        "return": TokenKind.kw_return,
         "if": TokenKind.kw_if,
         "then": TokenKind.kw_then,
         "else": TokenKind.kw_else,
@@ -166,6 +174,15 @@ class Lexer:
         "var": TokenKind.kw_var,
         "const": TokenKind.kw_const,
     }
+
+    @classmethod
+    def clean(cls) -> None:
+        """Reset the Lexer attributes."""
+        cls.cur_loc = SourceLocation(0, 0)
+        cls.cur_tok = Token(kind=TokenKind.not_initialized, value="")
+        cls.lex_loc = SourceLocation(0, 0)
+        cls.last_char = ""
+        cls.new_line = True
 
     @classmethod
     def gettok(cls) -> Token:
@@ -178,11 +195,27 @@ class Lexer:
             The next token from standard input.
         """
         if cls.last_char == "":
+            cls.new_line = True
             cls.last_char = cls.advance()
 
         # Skip any whitespace.
+        indent = 0
         while cls.last_char.isspace():
+            if cls.new_line:
+                indent += 1
+
+            if cls.last_char == "\n":
+                # note: if it is an empty line it is not necessary to keep
+                #       the record about the indentation
+                cls.new_line = True
+                indent = 0
+
             cls.last_char = cls.advance()
+
+        cls.new_line = False
+
+        if indent:
+            return Token(kind=TokenKind.indent, value=indent)
 
         Lexer.cur_loc = Lexer.lex_loc
 
