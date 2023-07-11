@@ -1,5 +1,5 @@
 """Base module for code generation."""
-from typing import Any, Callable, Type, Dict, List, Union, TypeAlias
+from typing import Any, Callable, Type, Dict
 
 import llvmlite.binding as llvm
 from llvmlite import ir
@@ -7,17 +7,13 @@ from llvmlite import ir
 from arx import ast
 from arx.exceptions import CodeGenException
 
-CodeGenResultType: TypeAlias = Union[ir.Value, ir.Function, None]
-
 
 class CodeGenBase:
     """A base Visitor pattern class."""
 
-    def visit(self, expr: ast.ExprAST) -> CodeGenResultType:
+    def visit(self, expr: ast.ExprAST) -> None:
         """Call the correspondent visit function for the given expr type."""
-        map_visit_expr: Dict[
-            Type[ast.ExprAST], Callable[[Any], CodeGenResultType]
-        ] = {
+        map_visit_expr: Dict[Type[ast.ExprAST], Callable[[Any], None]] = {
             ast.BinaryExprAST: self.visit_binary_expr,
             ast.CallExprAST: self.visit_call_expr,
             ast.FloatExprAST: self.visit_float_expr,
@@ -36,57 +32,55 @@ class CodeGenBase:
 
         if not fn:
             print("Fail to downcasting ExprAST.")
-            return None
+            return
 
-        return fn(expr)
+        fn(expr)
 
-    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> CodeGenResultType:
+    def visit_binary_expr(self, expr: ast.BinaryExprAST) -> None:
         """Visit method for binary expression."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_block(self, expr: ast.BlockAST) -> List[CodeGenResultType]:
+    def visit_block(self, expr: ast.BlockAST) -> None:
         """Visit method for tree ast."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_call_expr(self, expr: ast.CallExprAST) -> CodeGenResultType:
+    def visit_call_expr(self, expr: ast.CallExprAST) -> None:
         """Visit method for function call."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_float_expr(self, expr: ast.FloatExprAST) -> CodeGenResultType:
+    def visit_float_expr(self, expr: ast.FloatExprAST) -> None:
         """Visit method for float."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_for_stmt(self, expr: ast.ForStmtAST) -> CodeGenResultType:
+    def visit_for_stmt(self, expr: ast.ForStmtAST) -> None:
         """Visit method for `for` loop."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_function(self, expr: ast.FunctionAST) -> CodeGenResultType:
+    def visit_function(self, expr: ast.FunctionAST) -> None:
         """Visit method for function definition."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_if_stmt(self, expr: ast.IfStmtAST) -> CodeGenResultType:
+    def visit_if_stmt(self, expr: ast.IfStmtAST) -> None:
         """Visit method for if statement."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_prototype(self, expr: ast.PrototypeAST) -> CodeGenResultType:
+    def visit_prototype(self, expr: ast.PrototypeAST) -> None:
         """Visit method for prototype."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_return_stmt(self, expr: ast.ReturnStmtAST) -> CodeGenResultType:
+    def visit_return_stmt(self, expr: ast.ReturnStmtAST) -> None:
         """Visit method for expression."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> CodeGenResultType:
+    def visit_unary_expr(self, expr: ast.UnaryExprAST) -> None:
         """Visit method for unary expression."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_var_expr(self, expr: ast.VarExprAST) -> CodeGenResultType:
+    def visit_var_expr(self, expr: ast.VarExprAST) -> None:
         """Visit method for variable declaration."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_variable_expr(
-        self, expr: ast.VariableExprAST
-    ) -> CodeGenResultType:
+    def visit_variable_expr(self, expr: ast.VariableExprAST) -> None:
         """Visit method for variable usage."""
         raise CodeGenException("Not implemented yet.")
 
