@@ -17,10 +17,11 @@ from arx.parser import Parser
     ],
 )
 def test_ast_to_output(code: str) -> None:
-    Lexer.clean()
-    Parser.clean()
+    lexer = Lexer()
+    parser = Parser()
+    printer = ASTtoOutput()
+
     ArxIO.string_to_buffer(code)
 
-    ast = Parser.parse()
-    printer = ASTtoOutput()
-    printer.emit_ast(ast)
+    module_ast = parser.parse(lexer.lex())
+    printer.emit_ast(module_ast)

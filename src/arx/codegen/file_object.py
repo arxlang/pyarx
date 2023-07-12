@@ -10,6 +10,7 @@ from arx import ast
 from arx.codegen.base import CodeGenLLVMBase
 
 from arx.io import ArxFile, ArxIO
+from arx.lexer import Lexer
 from arx.parser import Parser
 
 logging.basicConfig(level=logging.INFO)
@@ -187,10 +188,13 @@ class ObjectGenerator(CodeGenLLVMBase):
         print(f"Arx {ARX_VERSION} \n")
         print(">>> ")
 
+        lexer = Lexer()
+        parser = Parser()
+
         while True:
             try:
                 ArxIO.string_to_buffer(input())
-                self.evaluate(Parser.parse())
+                self.evaluate(parser.parse(lexer.lex()))
             except KeyboardInterrupt:
                 break
 

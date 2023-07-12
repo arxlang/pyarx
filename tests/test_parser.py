@@ -6,36 +6,39 @@ from arx.parser import Parser
 
 def test_binop_precedence() -> None:
     """Test BinOp precedence."""
-    Parser.clean()
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
 
-    assert Parser.bin_op_precedence["="] == 2
-    assert Parser.bin_op_precedence["<"] == 10
-    assert Parser.bin_op_precedence[">"] == 10
-    assert Parser.bin_op_precedence["+"] == 20
-    assert Parser.bin_op_precedence["-"] == 20
-    assert Parser.bin_op_precedence["*"] == 40
+    assert parser.bin_op_precedence["="] == 2
+    assert parser.bin_op_precedence["<"] == 10
+    assert parser.bin_op_precedence[">"] == 10
+    assert parser.bin_op_precedence["+"] == 20
+    assert parser.bin_op_precedence["-"] == 20
+    assert parser.bin_op_precedence["*"] == 40
 
 
 def test_parse_float_expr() -> None:
     """Test gettok for main tokens"""
     ArxIO.string_to_buffer("1 2")
-    Parser.clean()
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
 
-    Lexer.get_next_token()
-    expr = Parser.parse_float_expr()
+    parser.tokens.get_next_token()
+    expr = parser.parse_float_expr()
     assert expr
     assert isinstance(expr, ast.FloatExprAST)
     assert expr.value == 1.0
 
-    expr = Parser.parse_float_expr()
+    expr = parser.parse_float_expr()
     assert expr
     assert isinstance(expr, ast.FloatExprAST)
     assert expr.value == 2
 
     ArxIO.string_to_buffer("3")
+    parser = Parser(lexer.lex())
 
-    tok = Lexer.get_next_token()
-    expr = Parser.parse_float_expr()
+    tok = parser.tokens.get_next_token()
+    expr = parser.parse_float_expr()
     assert expr
     assert isinstance(expr, ast.FloatExprAST)
     assert expr.value == 3
@@ -43,25 +46,28 @@ def test_parse_float_expr() -> None:
 
 def test_parse() -> None:
     """Test gettok for main tokens."""
-    Parser.clean()
     ArxIO.string_to_buffer(
         "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
     )
+    lexer = Lexer()
+    parser = Parser()
 
-    expr = Parser.parse()
+    expr = parser.parse(lexer.lex())
     assert expr
     assert isinstance(expr, ast.BlockAST)
 
 
 def test_parse_if_stmt() -> None:
     """Test gettok for main tokens."""
-    Parser.clean()
     ArxIO.string_to_buffer(
         "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
     )
 
-    Lexer.get_next_token()
-    expr = Parser.parse_primary()
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
+
+    parser.tokens.get_next_token()
+    expr = parser.parse_primary()
     assert expr
     assert isinstance(expr, ast.IfStmtAST)
     assert isinstance(expr.cond, ast.BinaryExprAST)
@@ -73,7 +79,6 @@ def test_parse_if_stmt() -> None:
 
 def test_parse_fn() -> None:
     """Test gettok for main tokens."""
-    Parser.clean()
     ArxIO.string_to_buffer(
         "fn math(x):\n"
         + "  if 1 > 2:\n"
@@ -82,8 +87,12 @@ def test_parse_fn() -> None:
         + "    a = 2\n"
         + "  return a\n"
     )
-    Lexer.get_next_token()
-    expr = Parser.parse_function()
+
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
+
+    parser.tokens.get_next_token()
+    expr = parser.parse_function()
     assert expr
     assert isinstance(expr, ast.FunctionAST)
     assert isinstance(expr.proto, ast.PrototypeAST)

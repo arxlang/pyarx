@@ -47,15 +47,15 @@ def get_args() -> argparse.ArgumentParser:
         formatter_class=CustomHelpFormatter,
     )
     parser.add_argument(
+        "input_files",
+        nargs="*",
+        type=str,
+        help="The input file",
+    )
+    parser.add_argument(
         "--version",
         action="store_true",
         help="Show the version of the installed MakIm tool.",
-    )
-
-    parser.add_argument(
-        "--input-file",
-        type=str,
-        help="The input file",
     )
 
     parser.add_argument(

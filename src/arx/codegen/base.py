@@ -15,14 +15,15 @@ class CodeGenBase:
         """Call the correspondent visit function for the given expr type."""
         map_visit_expr: Dict[Type[ast.ExprAST], Callable[[Any], None]] = {
             ast.BinaryExprAST: self.visit_binary_expr,
+            ast.BlockAST: self.visit_block,
             ast.CallExprAST: self.visit_call_expr,
             ast.FloatExprAST: self.visit_float_expr,
             ast.ForStmtAST: self.visit_for_stmt,
             ast.FunctionAST: self.visit_function,
             ast.IfStmtAST: self.visit_if_stmt,
+            ast.ModuleAST: self.visit_module,
             ast.PrototypeAST: self.visit_prototype,
             ast.ReturnStmtAST: self.visit_return_stmt,
-            ast.BlockAST: self.visit_block,
             ast.UnaryExprAST: self.visit_unary_expr,
             ast.VarExprAST: self.visit_var_expr,
             ast.VariableExprAST: self.visit_variable_expr,
@@ -56,12 +57,16 @@ class CodeGenBase:
         """Visit method for `for` loop."""
         raise CodeGenException("Not implemented yet.")
 
+    def visit_if_stmt(self, expr: ast.IfStmtAST) -> None:
+        """Visit method for if statement."""
+        raise CodeGenException("Not implemented yet.")
+
     def visit_function(self, expr: ast.FunctionAST) -> None:
         """Visit method for function definition."""
         raise CodeGenException("Not implemented yet.")
 
-    def visit_if_stmt(self, expr: ast.IfStmtAST) -> None:
-        """Visit method for if statement."""
+    def visit_module(self, expr: ast.ModuleAST) -> None:
+        """Visit method for module."""
         raise CodeGenException("Not implemented yet.")
 
     def visit_prototype(self, expr: ast.PrototypeAST) -> None:
