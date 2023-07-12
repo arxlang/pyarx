@@ -48,7 +48,7 @@ def get_args() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "input_files",
-        nargs="+",
+        nargs="*",
         type=str,
         help="The input file",
     )
