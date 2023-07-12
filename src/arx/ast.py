@@ -2,7 +2,7 @@
 from enum import Enum
 from typing import List, Tuple
 
-from arx.lexer import Lexer, SourceLocation
+from arx.lexer import SourceLocation
 
 
 class ExprKind(Enum):
@@ -59,7 +59,7 @@ class ExprAST:
     loc: SourceLocation
     kind: ExprKind
 
-    def __init__(self, loc: SourceLocation = Lexer.cur_loc) -> None:
+    def __init__(self, loc: SourceLocation = SourceLocation(0, 0)) -> None:
         """Initialize the ExprAST instance."""
         self.kind = ExprKind.GenericKind
         self.loc = loc

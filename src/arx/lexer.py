@@ -1,13 +1,18 @@
 """Module for handling the lexer analysis."""
+from __future__ import annotations
+
+import copy
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, ClassVar, Dict
+from typing import Any, Dict, List, cast
 
 from arx.io import ArxIO
 
 EOF = ""
 
 
+@dataclass
 class SourceLocation:
     """
     Represents the source location with line and column information.
@@ -20,9 +25,8 @@ class SourceLocation:
         Column number.
     """
 
-    def __init__(self, line: int, col: int) -> None:
-        self.line = line
-        self.col = col
+    line: int = 0
+    col: int = 0
 
 
 class TokenKind(Enum):
@@ -104,6 +108,17 @@ class Token:
 
     kind: TokenKind
     value: Any
+    location: SourceLocation
+
+    def __init__(
+        self,
+        kind: TokenKind,
+        value: Any,
+        location: SourceLocation = SourceLocation(0, 0),
+    ) -> None:
+        self.kind = kind
+        self.value = value
+        self.location = copy.deepcopy(location)
 
     def get_name(self) -> str:
         """
@@ -137,9 +152,66 @@ class Token:
             return "(" + str(self.value) + ")"
         return ""
 
+    def __eq__(self, other: object) -> bool:
+        """Overload __eq__ operator."""
+        tok_other = cast(Token, other)
+        return (self.kind, self.value) == (tok_other.kind, tok_other.value)
+
     def __str__(self) -> str:
         """Display the token in a readable way."""
         return f"{self.get_name()}{self.get_display_value()}"
+
+
+class TokenList:
+    """Class for handle a List of tokens."""
+
+    tokens: List[Token]
+    position: int = 0
+    cur_tok: Token
+
+    def __init__(self, tokens: List[Token]) -> None:
+        """Instantiate a TokenList object."""
+        self.tokens = tokens
+        self.position = 0
+        self.cur_tok: Token = Token(kind=TokenKind.not_initialized, value="")
+
+    def __iter__(self) -> TokenList:
+        """Overload the iterator operation."""
+        self.position = 0
+        return self
+
+    def __next__(self) -> Token:
+        """Overload the next method used by the iteration."""
+        if self.position == len(self.tokens):
+            raise StopIteration
+        return self.get_token()
+
+    def get_token(self) -> Token:
+        """
+        Get the next token.
+
+        Returns
+        -------
+        int
+            The next token from standard input.
+        """
+        tok = self.tokens[self.position]
+        self.position += 1
+        return tok
+
+    def get_next_token(self) -> Token:
+        """
+        Provide a simple token buffer.
+
+        Returns
+        -------
+        int
+            The current token the parser is looking at.
+            Reads another token from the lexer and updates
+            cur_tok with its results.
+        """
+        self.cur_tok = self.get_token()
+        return self.cur_tok
 
 
 class Lexer:
@@ -150,19 +222,15 @@ class Lexer:
     ----------
     cur_loc : SourceLocation
         Current source location.
-    cur_tok : int
-        Current token.
     lex_loc : SourceLocation
         Source location for lexer.
     """
 
-    cur_loc: SourceLocation = SourceLocation(0, 0)
-    cur_tok: Token
     lex_loc: SourceLocation = SourceLocation(0, 0)
     last_char: str = ""
     new_line: bool = True
 
-    _keyword_map: ClassVar[Dict[str, TokenKind]] = {
+    _keyword_map: Dict[str, TokenKind] = {  # noqa: RUF012
         "fn": TokenKind.kw_function,
         "extern": TokenKind.kw_extern,
         "return": TokenKind.kw_return,
@@ -175,17 +243,24 @@ class Lexer:
         "const": TokenKind.kw_const,
     }
 
-    @classmethod
-    def clean(cls) -> None:
-        """Reset the Lexer attributes."""
-        cls.cur_loc = SourceLocation(0, 0)
-        cls.cur_tok = Token(kind=TokenKind.not_initialized, value="")
-        cls.lex_loc = SourceLocation(0, 0)
-        cls.last_char = ""
-        cls.new_line = True
+    def __init__(self) -> None:
+        # self.cur_loc: SourceLocation = SourceLocation(0, 0)
+        self.lex_loc: SourceLocation = SourceLocation(0, 0)
+        self.last_char: str = ""
+        self.new_line: bool = True
 
-    @classmethod
-    def gettok(cls) -> Token:
+        self._keyword_map: Dict[str, TokenKind] = copy.deepcopy(
+            self._keyword_map
+        )
+
+    def clean(self) -> None:
+        """Reset the Lexer attributes."""
+        # self.cur_loc = SourceLocation(0, 0)
+        self.lex_loc = SourceLocation(0, 0)
+        self.last_char = ""
+        self.new_line = True
+
+    def get_token(self) -> Token:
         """
         Get the next token.
 
@@ -194,77 +269,90 @@ class Lexer:
         int
             The next token from standard input.
         """
-        if cls.last_char == "":
-            cls.new_line = True
-            cls.last_char = cls.advance()
+        if self.last_char == "":
+            self.new_line = True
+            self.last_char = self.advance()
 
         # Skip any whitespace.
         indent = 0
-        while cls.last_char.isspace():
-            if cls.new_line:
+        while self.last_char.isspace():
+            if self.new_line:
                 indent += 1
 
-            if cls.last_char == "\n":
+            if self.last_char == "\n":
                 # note: if it is an empty line it is not necessary to keep
                 #       the record about the indentation
-                cls.new_line = True
+                self.new_line = True
                 indent = 0
 
-            cls.last_char = cls.advance()
+            self.last_char = self.advance()
 
-        cls.new_line = False
+        self.new_line = False
 
         if indent:
-            return Token(kind=TokenKind.indent, value=indent)
+            return Token(
+                kind=TokenKind.indent, value=indent, location=self.lex_loc
+            )
 
-        Lexer.cur_loc = Lexer.lex_loc
+        # self.cur_loc = self.lex_loc
 
-        if cls.last_char.isalpha() or cls.last_char == "_":
+        if self.last_char.isalpha() or self.last_char == "_":
             # Identifier
-            identifier = cls.last_char
-            cls.last_char = cls.advance()
+            identifier = self.last_char
+            self.last_char = self.advance()
 
-            while cls.last_char.isalnum() or cls.last_char == "_":
-                identifier += cls.last_char
-                cls.last_char = cls.advance()
+            while self.last_char.isalnum() or self.last_char == "_":
+                identifier += self.last_char
+                self.last_char = self.advance()
 
-            if identifier in cls._keyword_map:
+            if identifier in self._keyword_map:
                 return Token(
-                    kind=cls._keyword_map[identifier], value=identifier
+                    kind=self._keyword_map[identifier],
+                    value=identifier,
+                    location=self.lex_loc,
                 )
 
-            return Token(kind=TokenKind.identifier, value=identifier)
+            return Token(
+                kind=TokenKind.identifier,
+                value=identifier,
+                location=self.lex_loc,
+            )
 
         # Number: [0-9.]+
-        if cls.last_char.isdigit() or cls.last_char == ".":
+        if self.last_char.isdigit() or self.last_char == ".":
             num_str = ""
-            while cls.last_char.isdigit() or cls.last_char == ".":
-                num_str += cls.last_char
-                cls.last_char = cls.advance()
+            while self.last_char.isdigit() or self.last_char == ".":
+                num_str += self.last_char
+                self.last_char = self.advance()
 
-            return Token(kind=TokenKind.float_literal, value=float(num_str))
+            return Token(
+                kind=TokenKind.float_literal,
+                value=float(num_str),
+                location=self.lex_loc,
+            )
 
         # Comment until end of line.
-        if cls.last_char == "#":
+        if self.last_char == "#":
             while (
-                cls.last_char != EOF
-                and cls.last_char != "\n"
-                and cls.last_char != "\r"
+                self.last_char != EOF
+                and self.last_char != "\n"
+                and self.last_char != "\r"
             ):
-                cls.last_char = cls.advance()
+                self.last_char = self.advance()
 
-            if cls.last_char != EOF:
-                return cls.gettok()
+            if self.last_char != EOF:
+                return self.get_token()
 
         # Check for end of file. Don't eat the EOF.
-        if cls.last_char:
-            this_char = cls.last_char
-            cls.last_char = cls.advance()
-            return Token(kind=TokenKind.operator, value=this_char)
-        return Token(kind=TokenKind.eof, value="")
+        if self.last_char:
+            this_char = self.last_char
+            self.last_char = self.advance()
+            return Token(
+                kind=TokenKind.operator, value=this_char, location=self.lex_loc
+            )
+        return Token(kind=TokenKind.eof, value="", location=self.lex_loc)
 
-    @classmethod
-    def advance(cls) -> str:
+    def advance(self) -> str:
         """
         Advance the token from the buffer.
 
@@ -276,24 +364,19 @@ class Lexer:
         last_char = ArxIO.get_char()
 
         if last_char == "\n" or last_char == "\r":
-            cls.lex_loc.line += 1
-            cls.lex_loc.col = 0
+            self.lex_loc.line += 1
+            self.lex_loc.col = 0
         else:
-            cls.lex_loc.col += 1
+            self.lex_loc.col += 1
 
         return last_char
 
-    @classmethod
-    def get_next_token(cls) -> Token:
-        """
-        Provide a simple token buffer.
-
-        Returns
-        -------
-        int
-            The current token the parser is looking at.
-            Reads another token from the lexer and updates
-            cur_tok with its results.
-        """
-        Lexer.cur_tok = cls.gettok()
-        return Lexer.cur_tok
+    def run(self) -> TokenList:
+        """Create a list of tokens from input source."""
+        self.clean()
+        cur_tok = Token(kind=TokenKind.not_initialized, value="")
+        tokens: List[Token] = []
+        while cur_tok.kind != TokenKind.eof:
+            cur_tok = self.get_token()
+            tokens.append(cur_tok)
+        return TokenList(tokens)
