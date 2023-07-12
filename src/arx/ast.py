@@ -9,6 +9,7 @@ class ExprKind(Enum):
     """The expression kind class used for downcasting."""
 
     GenericKind = -1
+    ModuleKind = -2
 
     # variables
     VariableKind = -10
@@ -74,6 +75,18 @@ class BlockAST(ExprAST):
         """Initialize the BlockAST instance."""
         super().__init__()
         self.nodes: List[ExprAST] = []
+
+
+class ModuleAST(BlockAST):
+    """AST main expression class."""
+
+    name: str
+
+    def __init__(self, name: str) -> None:
+        """Initialize the ExprAST instance."""
+        super().__init__()
+        self.name = name
+        self.kind = ExprKind.ModuleKind
 
 
 class FloatExprAST(ExprAST):

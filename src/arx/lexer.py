@@ -371,7 +371,7 @@ class Lexer:
 
         return last_char
 
-    def run(self) -> TokenList:
+    def lex(self) -> TokenList:
         """Create a list of tokens from input source."""
         self.clean()
         cur_tok = Token(kind=TokenKind.not_initialized, value="")

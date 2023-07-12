@@ -6,8 +6,8 @@ from arx.parser import Parser
 
 def test_binop_precedence() -> None:
     """Test BinOp precedence."""
-    lex = Lexer()
-    parser = Parser(lex.run())
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
 
     assert parser.bin_op_precedence["="] == 2
     assert parser.bin_op_precedence["<"] == 10
@@ -20,8 +20,8 @@ def test_binop_precedence() -> None:
 def test_parse_float_expr() -> None:
     """Test gettok for main tokens"""
     ArxIO.string_to_buffer("1 2")
-    lex = Lexer()
-    parser = Parser(lex.run())
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
 
     parser.tokens.get_next_token()
     expr = parser.parse_float_expr()
@@ -35,7 +35,7 @@ def test_parse_float_expr() -> None:
     assert expr.value == 2
 
     ArxIO.string_to_buffer("3")
-    parser = Parser(lex.run())
+    parser = Parser(lexer.lex())
 
     tok = parser.tokens.get_next_token()
     expr = parser.parse_float_expr()
@@ -49,10 +49,10 @@ def test_parse() -> None:
     ArxIO.string_to_buffer(
         "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
     )
-    lex = Lexer()
-    parser = Parser(lex.run())
+    lexer = Lexer()
+    parser = Parser()
 
-    expr = parser.parse()
+    expr = parser.parse(lexer.lex())
     assert expr
     assert isinstance(expr, ast.BlockAST)
 
@@ -63,8 +63,8 @@ def test_parse_if_stmt() -> None:
         "if 1 > 2:\n" + "  a = 1\n" + "else:\n" + "  a = 2\n"
     )
 
-    lex = Lexer()
-    parser = Parser(lex.run())
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
 
     parser.tokens.get_next_token()
     expr = parser.parse_primary()
@@ -88,8 +88,8 @@ def test_parse_fn() -> None:
         + "  return a\n"
     )
 
-    lex = Lexer()
-    parser = Parser(lex.run())
+    lexer = Lexer()
+    parser = Parser(lexer.lex())
 
     parser.tokens.get_next_token()
     expr = parser.parse_function()

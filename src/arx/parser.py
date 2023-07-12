@@ -15,7 +15,7 @@ class Parser:
     indent_level: int = 0
     tokens: TokenList
 
-    def __init__(self, tokens: TokenList) -> None:
+    def __init__(self, tokens: TokenList = TokenList([])) -> None:
         """Instantiate the Parser object."""
         self.bin_op_precedence: Dict[str, int] = {
             "=": 2,
@@ -26,13 +26,18 @@ class Parser:
             "*": 40,
         }
         self.indent_level: int = 0
+        # note: it is useful to assign an initial token list here
+        #       mainly for tests
         self.tokens: TokenList = tokens
 
     def clean(self) -> None:
         """Reset the Parser static variables."""
         self.indent_level = 0
+        self.tokens: TokenList = TokenList([])
 
-    def parse(self) -> ast.BlockAST:
+    def parse(
+        self, tokens: TokenList, module_name: str = "main"
+    ) -> ast.BlockAST:
         """
         Parse the input code.
 
@@ -42,8 +47,9 @@ class Parser:
             The parsed abstract syntax tree (AST), or None if parsing fails.
         """
         self.clean()
+        self.tokens = tokens
 
-        tree: ast.BlockAST = ast.BlockAST()
+        tree: ast.ModuleAST = ast.ModuleAST(module_name)
         self.tokens.get_next_token()
 
         if self.tokens.cur_tok.kind == TokenKind.not_initialized:

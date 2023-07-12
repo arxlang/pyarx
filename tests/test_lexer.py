@@ -21,40 +21,40 @@ def test_token_name() -> None:
 @pytest.mark.parametrize("value", ["123", "234", "345"])
 def test_advance(value: str) -> None:
     ArxIO.string_to_buffer(value)
-    lex = Lexer()
-    assert lex.advance() == value[0]
-    assert lex.advance() == value[1]
-    assert lex.advance() == value[2]
+    lexer = Lexer()
+    assert lexer.advance() == value[0]
+    assert lexer.advance() == value[1]
+    assert lexer.advance() == value[2]
 
 
 def test_get_tok_simple() -> None:
     ArxIO.string_to_buffer("11")
-    lex = Lexer()
-    assert lex.get_token() == Token(kind=TokenKind.float_literal, value=11.0)
+    lexer = Lexer()
+    assert lexer.get_token() == Token(kind=TokenKind.float_literal, value=11.0)
 
     ArxIO.string_to_buffer("21")
-    assert lex.get_token() == Token(kind=TokenKind.float_literal, value=21.0)
+    assert lexer.get_token() == Token(kind=TokenKind.float_literal, value=21.0)
 
     ArxIO.string_to_buffer("31")
-    assert lex.get_token() == Token(kind=TokenKind.float_literal, value=31.0)
+    assert lexer.get_token() == Token(kind=TokenKind.float_literal, value=31.0)
 
 
 def test_get_next_token_simple() -> None:
-    lex = Lexer()
+    lexer = Lexer()
     ArxIO.string_to_buffer("11")
-    tokens = lex.run()
+    tokens = lexer.lex()
     assert tokens.get_next_token() == Token(
         kind=TokenKind.float_literal, value=11.0
     )
 
     ArxIO.string_to_buffer("21")
-    tokens = lex.run()
+    tokens = lexer.lex()
     assert tokens.get_next_token() == Token(
         kind=TokenKind.float_literal, value=21.0
     )
 
     ArxIO.string_to_buffer("31")
-    tokens = lex.run()
+    tokens = lexer.lex()
     assert tokens.get_next_token() == Token(
         kind=TokenKind.float_literal, value=31.0
     )
@@ -70,33 +70,33 @@ def test_get_tok() -> None:
         "    return x * 20\n"
         "math(1)\n"
     )
-    lex = Lexer()
-    assert lex.get_token() == Token(kind=TokenKind.kw_function, value="fn")
-    assert lex.get_token() == Token(kind=TokenKind.identifier, value="math")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value="(")
-    assert lex.get_token() == Token(kind=TokenKind.identifier, value="x")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value=")")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value=":")
-    assert lex.get_token() == Token(kind=TokenKind.indent, value=2)
-    assert lex.get_token() == Token(kind=TokenKind.kw_if, value="if")
-    assert lex.get_token() == Token(kind=TokenKind.identifier, value="x")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value=">")
-    assert lex.get_token() == Token(kind=TokenKind.float_literal, value=10.0)
-    assert lex.get_token() == Token(kind=TokenKind.operator, value=":")
-    assert lex.get_token() == Token(kind=TokenKind.indent, value=4)
-    assert lex.get_token() == Token(kind=TokenKind.kw_return, value="return")
-    assert lex.get_token() == Token(kind=TokenKind.identifier, value="x")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value="+")
-    assert lex.get_token() == Token(kind=TokenKind.float_literal, value=1.0)
-    assert lex.get_token() == Token(kind=TokenKind.indent, value=2)
-    assert lex.get_token() == Token(kind=TokenKind.kw_else, value="else")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value=":")
-    assert lex.get_token() == Token(kind=TokenKind.indent, value=4)
-    assert lex.get_token() == Token(kind=TokenKind.kw_return, value="return")
-    assert lex.get_token() == Token(kind=TokenKind.identifier, value="x")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value="*")
-    assert lex.get_token() == Token(kind=TokenKind.float_literal, value=20.0)
-    assert lex.get_token() == Token(kind=TokenKind.identifier, value="math")
-    assert lex.get_token() == Token(kind=TokenKind.operator, value="(")
-    assert lex.get_token() == Token(kind=TokenKind.float_literal, value=1.0)
-    assert lex.get_token() == Token(kind=TokenKind.operator, value=")")
+    lexer = Lexer()
+    assert lexer.get_token() == Token(kind=TokenKind.kw_function, value="fn")
+    assert lexer.get_token() == Token(kind=TokenKind.identifier, value="math")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value="(")
+    assert lexer.get_token() == Token(kind=TokenKind.identifier, value="x")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value=")")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value=":")
+    assert lexer.get_token() == Token(kind=TokenKind.indent, value=2)
+    assert lexer.get_token() == Token(kind=TokenKind.kw_if, value="if")
+    assert lexer.get_token() == Token(kind=TokenKind.identifier, value="x")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value=">")
+    assert lexer.get_token() == Token(kind=TokenKind.float_literal, value=10.0)
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value=":")
+    assert lexer.get_token() == Token(kind=TokenKind.indent, value=4)
+    assert lexer.get_token() == Token(kind=TokenKind.kw_return, value="return")
+    assert lexer.get_token() == Token(kind=TokenKind.identifier, value="x")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value="+")
+    assert lexer.get_token() == Token(kind=TokenKind.float_literal, value=1.0)
+    assert lexer.get_token() == Token(kind=TokenKind.indent, value=2)
+    assert lexer.get_token() == Token(kind=TokenKind.kw_else, value="else")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value=":")
+    assert lexer.get_token() == Token(kind=TokenKind.indent, value=4)
+    assert lexer.get_token() == Token(kind=TokenKind.kw_return, value="return")
+    assert lexer.get_token() == Token(kind=TokenKind.identifier, value="x")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value="*")
+    assert lexer.get_token() == Token(kind=TokenKind.float_literal, value=20.0)
+    assert lexer.get_token() == Token(kind=TokenKind.identifier, value="math")
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value="(")
+    assert lexer.get_token() == Token(kind=TokenKind.float_literal, value=1.0)
+    assert lexer.get_token() == Token(kind=TokenKind.operator, value=")")
