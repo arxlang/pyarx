@@ -1,14 +1,15 @@
 """Arx main module."""
+
 import os
 
 from typing import Any, List
 
 from arx import ast
+from arx.codegen.ast_output import ASTtoOutput
+from arx.codegen.file_object import ObjectGenerator
 from arx.io import ArxIO
 from arx.lexer import Lexer
 from arx.parser import Parser
-from arx.codegen.ast_output import ASTtoOutput
-from arx.codegen.file_object import ObjectGenerator
 
 
 def get_module_name_from_file_path(filepath: str) -> str:

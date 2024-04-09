@@ -1,4 +1,5 @@
 """Arx is a compiler create with llvm."""
+
 from importlib import metadata as importlib_metadata
 
 

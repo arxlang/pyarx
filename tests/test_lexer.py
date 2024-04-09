@@ -1,8 +1,9 @@
 """Tests for `arx`.`lexer`."""
+
 import pytest
 
 from arx.io import ArxIO
-from arx.lexer import Lexer, TokenKind, Token
+from arx.lexer import Lexer, Token, TokenKind
 
 
 def test_token_name() -> None:

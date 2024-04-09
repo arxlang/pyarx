@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from arx.io import ArxIO
-from arx.lexer import Lexer
-from arx.parser import Parser
 from arx.codegen.file_object import ObjectGenerator
+from arx.io import ArxIO
+from arx.lexer import Lexer, TokenList
+from arx.parser import Parser
 
 PROJECT_PATH = Path(__file__).parent.parent.resolve()
 
@@ -21,10 +21,16 @@ PROJECT_PATH = Path(__file__).parent.parent.resolve()
 )
 @pytest.mark.skip(reason="codegen with llvm is paused for now")
 def test_object_generation(code: str) -> None:
-    Lexer.clean()
-    Parser.clean()
+    lexer = Lexer()
+    lexer.clean()
+
+    parser = Parser()
+    parser.clean()
+
+    tokens = TokenList([])
+
     ArxIO.string_to_buffer(code)
-    ast = Parser.parse()
+    ast = parser.parse(tokens)
     objgen = ObjectGenerator()
     objgen.evaluate(ast)
     # remove temporary object file generated

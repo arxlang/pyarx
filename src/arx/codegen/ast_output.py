@@ -1,10 +1,11 @@
 """Set of classes and functions to emit the AST from a given source code."""
+
 from typing import Any, Dict, List, TypeAlias, Union
 
 import yaml
 
-from arx.codegen.base import CodeGenBase
 from arx import ast
+from arx.codegen.base import CodeGenBase
 
 OutputValueAST: TypeAlias = Union[str, int, float, List[Any], Dict[str, Any]]
 

@@ -1,6 +1,8 @@
 """File Object, Executable or LLVM IR generation."""
+
 import logging
 import os
+
 from typing import Any, Dict, List, Union
 
 from llvmlite import binding as llvm
@@ -8,7 +10,6 @@ from llvmlite import ir
 
 from arx import ast
 from arx.codegen.base import CodeGenLLVMBase
-
 from arx.io import ArxFile, ArxIO
 from arx.lexer import Lexer
 from arx.parser import Parser

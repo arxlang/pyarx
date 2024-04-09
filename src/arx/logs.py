@@ -1,4 +1,5 @@
 """The logs functions and classes handle all the system messages."""
+
 import sys
 
 

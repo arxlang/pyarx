@@ -1,9 +1,10 @@
 """parser module gather all functions and classes for parsing."""
+
 from typing import Dict, List, Tuple
 
 from arx import ast
 from arx.exceptions import ParserException
-from arx.lexer import SourceLocation, TokenKind, Token, TokenList
+from arx.lexer import SourceLocation, Token, TokenKind, TokenList
 
 INDENT_SIZE = 2
 

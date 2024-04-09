@@ -24,15 +24,15 @@ theme:
     accent: lime
 
 nav:
-  - Home: 'index.md'
-  - 'API Docs': '/api/'
-  - Sponsor: 'sponsor.md'
-  - Roadmap: 'roadmap.md'
-  - Governance: 'governance.md'
-  - Changelog: 'changelog.md'
-  - 'Contributing Guide': 'contributing.md'
-  - Partners: 'partners.md'
-  - Code of Conduct: 'coc.md'
+  - Home: "index.md"
+  - "API Docs": "/api/"
+  - Sponsor: "sponsor.md"
+  - Roadmap: "roadmap.md"
+  - Governance: "governance.md"
+  - Changelog: "changelog.md"
+  - "Contributing Guide": "contributing.md"
+  - Partners: "partners.md"
+  - Code of Conduct: "coc.md"
 
 plugins:
   - search
@@ -123,7 +123,6 @@ markdown_extensions:
       alternate_style: true
   - tables
   - toc
-
 
 extra:
   project_name: "Arx"
