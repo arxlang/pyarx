@@ -10,4 +10,4 @@ changes.</p>
 ## Arx Enhancement Proposals
 
 Any change to the language (syntax) should be done using a Enhancement Proposal
-via [https://github.com/arxlang/arx-proposals](arx-proposals) repository.
+via [arx-proposals](https://github.com/arxlang/arx-proposals) repository.

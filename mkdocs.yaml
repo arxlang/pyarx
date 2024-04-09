@@ -1,5 +1,6 @@
 site_name: ArxLang
-
+site_url: https://arxlang.org
+repo_url: https://github.com/arxlang/arx
 docs_dir: ./docs
 site_dir: ./build
 
@@ -16,12 +17,24 @@ theme:
     - search.suggest
   icon:
     repo: fontawesome/brands/github
-  logo: images/arx.png
-  favicon: favicon.ico
+  logo: ./images/arx.png
+  favicon: ./favicon.ico
   palette:
-    scheme: slate
-    primary: white
-    accent: lime
+    # Palette toggle for light mode
+    - scheme: default
+      primary: white
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: white
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
 
 nav:
   - Home: "index.md"
@@ -87,11 +100,12 @@ plugins:
             show_root_toc_entry: true
             show_source: false
   - mkdocs-jupyter:
-      execute: true
+      execute: false
       ignore:
         - "*.py"
+        - ".ipynb_checkpoints/*"
       include_source: true
-      theme: dark
+      include_requirejs: true
   - literate-nav
 
 markdown_extensions:
@@ -122,7 +136,8 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
   - tables
-  - toc
+  - toc:
+      permalink: true
 
 extra:
   project_name: "Arx"
