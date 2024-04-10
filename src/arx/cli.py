@@ -1,7 +1,8 @@
 """Functions and classes for handling the CLI call."""
+
 import argparse
 
-from typing import Optional, Any
+from typing import Any, Optional
 
 from arx import __version__
 from arx.main import ArxMain

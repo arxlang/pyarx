@@ -1,4 +1,5 @@
 """Module for handling the IO used by the compiler."""
+
 import os
 import sys
 import tempfile

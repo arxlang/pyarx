@@ -1,7 +1,9 @@
 """Base module for code generation."""
-from typing import Any, Callable, Type, Dict
+
+from typing import Any, Callable, Dict, Type
 
 import llvmlite.binding as llvm
+
 from llvmlite import ir
 
 from arx import ast

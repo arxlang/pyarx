@@ -1,4 +1,5 @@
 """Module for handling the lexer analysis."""
+
 from __future__ import annotations
 
 import copy

@@ -4,83 +4,82 @@ description: Create a report to help us improve
 labels: ["bug"]
 
 body:
-- type: markdown
-  attributes:
-    value: >
-      **Thank you for wanting to report a bug in Arx!**
+  - type: markdown
+    attributes:
+      value: >
+        **Thank you for wanting to report a bug in Arx!**
 
-      ⚠
-      Verify first that your issue is not
-      [already reported on GitHub][issue search].
+        ⚠
+        Verify first that your issue is not
+        [already reported on GitHub][issue search].
 
-      [issue search]: arxlang/arx/issues?q=is%3Aopen+is%3Aissue+label%3Abug
+        [issue search]: arxlang/arx/issues?q=is%3Aopen+is%3Aissue+label%3Abug
 
-- type: textarea
-  attributes:
-    label: Summary
-    description: Explain the problem briefly below.
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: OS / Environment
-    description: >-
-      Provide information on your operating system and environment.
-    render: console
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: Steps to Reproduce
-    description: >-
-      Describe exactly how to reproduce the problem, using a minimal test-case.
-      It would *really* help us understand your problem if you paste in the Python code
-      that you're running.
-
-      **HINT:** You can paste [GitHub Gist](https://gist.github.com) links for larger files.
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: Expected Results
-    description: >-
-      Describe what you expected to happen when running the steps above.
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: Actual Results
-    description: >-
-      Paste verbatim program or command output.
-      PS: Don't wrap it with triple backticks &mdash; your whole input will be
-      turned into a code snippet automatically.
-    render: console
-  validations:
-    required: true
-
-- type: textarea
-  attributes:
-    label: Arx version
-    description: >-
-      Paste verbatim output from `Arx --version` below, under the prompt line.
-      PS: Don't wrap it with triple backticks &mdash; your whole input will be
-      turned into a code snippet automatically.
-    render: console
-  validations:
-    required: true
-
-- type: checkboxes
-  attributes:
-    label: Code of Conduct
-    description: |
-      Read the [`Arx` Code of Conduct][CoC] first.
-
-      [CoC]: https://github.com/arx/coc/CODE_OF_CONDUCT.md
-    options:
-    - label: I agree to follow the Code of Conduct
+  - type: textarea
+    attributes:
+      label: Summary
+      description: Explain the problem briefly below.
+    validations:
       required: true
-...
+
+  - type: textarea
+    attributes:
+      label: OS / Environment
+      description: >-
+        Provide information on your operating system and environment.
+      render: console
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: >-
+        Describe exactly how to reproduce the problem, using a minimal test-case.
+        It would *really* help us understand your problem if you paste in the Python code
+        that you're running.
+
+        **HINT:** You can paste [GitHub Gist](https://gist.github.com) links for larger files.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Expected Results
+      description: >-
+        Describe what you expected to happen when running the steps above.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Actual Results
+      description: >-
+        Paste verbatim program or command output.
+        PS: Don't wrap it with triple backticks &mdash; your whole input will be
+        turned into a code snippet automatically.
+      render: console
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Arx version
+      description: >-
+        Paste verbatim output from `Arx --version` below, under the prompt line.
+        PS: Don't wrap it with triple backticks &mdash; your whole input will be
+        turned into a code snippet automatically.
+      render: console
+    validations:
+      required: true
+
+  - type: checkboxes
+    attributes:
+      label: Code of Conduct
+      description: |
+        Read the [`Arx` Code of Conduct][CoC] first.
+
+        [CoC]: https://github.com/arx/coc/CODE_OF_CONDUCT.md
+      options:
+        - label: I agree to follow the Code of Conduct
+          required: true

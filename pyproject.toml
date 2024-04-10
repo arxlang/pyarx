@@ -20,32 +20,31 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-llvmlite = "^0.40.1"
 pyyaml = ">=4"
+astx = "0.9.1"
+pyirx = "1.1.0"
 
 [tool.poetry.group.dev.dependencies]
-urllib3 = "<2"  # fix poetry issues
 pytest = ">=7"
 pytest-cov = ">=4"
 coverage = ">=7"
-black = ">=23"
 pre-commit = ">=3"
-ruff = ">=0.0.272"
-mypy = ">=1"
+ruff = ">=0.3.0"
+mypy = ">=1.6"
 bandit = ">=1.7.5"
 vulture = ">=2.7"
 mccabe = ">=0.6.1"
-Jinja2 = "<3.1.0"
-mkdocs = ">=1.2.3,<2"
-mkdocs-exclude = ">=1.0.2,<2"
-mkdocs-jupyter = ">=0.20.0,<1"
-mkdocs-literate-nav = ">=0.4.1,<1"
-mkdocs-macros-plugin = ">=0.6.3,<1"
-mkdocs-material = ">=8.2.1,<9"
-mkdocstrings = ">=0.17.0,<0.18.0"
-makim = "1.8.1"
-pytkdocs = {extras = ["numpy-style"], version = "^0.16.1"}
-pdbpp = "^0.10.3"
+mkdocs = ">=1.4.3"
+mkdocs-exclude = ">=1.0.2"
+mkdocs-jupyter = ">=0.24.7"
+mkdocs-literate-nav = ">=0.6.0"
+mkdocs-macros-plugin = ">=0.7.0,<1"
+mkdocs-material = ">=9.1.15"
+mkdocstrings = ">=0.21.2"
+mkdocstrings-python = ">=1.1.2"
+makim = "1.15.0"
+pytkdocs = {extras = ["numpy-style"], version = ">=0.16.1"}
+pdbpp = ">=0.10.3"
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -73,32 +72,43 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 79
 force-exclude = true
-src = ["src/arx"]
+src = ["./"]
 exclude = [
-   'docs',
+  'docs',
+  'tests',
 ]
+fix = true
+
+[tool.ruff.lint]
 select = [
   "E",   # pycodestyle
   "F",   # pyflakes
   "D",   # pydocstyle
   "YTT", # flake8-2020
+  # "PL",  # PL
   "RUF", # Ruff-specific rules
+  "I001", # isort
+]
+ignore = [
+  "F811",
+  "PLR0911",  # Too many return statements
+  "PLR0912",  # Too many branches
 ]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.isort]
+# Use a single line between direct and from import
+lines-between-types = 1
+
+[tool.ruff.format]
+quote-style = "double"
 
 [tool.bandit]
 exclude_dirs = ["tests"]
 targets = "src/arx"
 
-[tool.black]
-line-length = 79
-target-version = ["py310"]
-force-exclude = '''(?x)(
-    docs/*
-  | .*\\.egg-info
-)'''  # TOML's single-quoted strings do not require escaping backslashes
 
 [tool.vulture]
 exclude = ["tests"]

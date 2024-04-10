@@ -1,6 +1,6 @@
-from arx.io import ArxIO
 from arx import ast
-from arx.lexer import Lexer, TokenKind, Token
+from arx.io import ArxIO
+from arx.lexer import Lexer
 from arx.parser import Parser
 
 
