@@ -72,7 +72,7 @@ jobs:
       - name: Run smoke tests
         run: makim tests.smoke
 
-  linter-and-docs:
+  linter:
     needs: check-branch
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -102,11 +102,7 @@ jobs:
           poetry config virtualenvs.create false
           poetry install
 
-      - name: Test documentation generation
-        run: makim docs.build
-
       - name: Run style checks
-        if: success() || failure()
         run: |
           pre-commit install
           makim tests.linter
