@@ -19,10 +19,10 @@ packages = [
 "arx" = "arx.__main__:app"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<4"
 pyyaml = ">=4"
-astx = "0.11.*"
-pyirx = "1.2.*"
+astx = "0.12.2"
+pyirx = "1.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7"
