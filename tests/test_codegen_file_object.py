@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from arx.codegen.file_object import ObjectGenerator
+from arx.codegen import ObjectGenerator
 from arx.io import ArxIO
 from arx.lexer import Lexer, TokenList
 from arx.parser import Parser

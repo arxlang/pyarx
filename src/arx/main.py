@@ -4,9 +4,9 @@ import os
 
 from typing import Any, List
 
-from arx import ast
-from arx.codegen.ast_output import ASTtoOutput
-from arx.codegen.file_object import ObjectGenerator
+import astx
+
+from arx.codegen import ObjectGenerator
 from arx.io import ArxIO
 from arx.lexer import Lexer
 from arx.parser import Parser
@@ -49,7 +49,7 @@ class ArxMain:
         """Print the AST for the given input file."""
         lexer = Lexer()
         parser = Parser()
-        tree_ast = ast.BlockAST()
+        tree_ast = astx.Block()
 
         for input_file in self.input_files:
             ArxIO.file_to_buffer(input_file)
@@ -57,8 +57,7 @@ class ArxMain:
             module_ast = parser.parse(lexer.lex(), module_name)
             tree_ast.nodes.append(module_ast)
 
-        printer = ASTtoOutput()
-        printer.emit_ast(tree_ast)
+        print(tree_ast.get_struct())
 
     def show_tokens(self) -> None:
         """Print the AST for the given input file."""
@@ -83,7 +82,7 @@ class ArxMain:
         lexer = Lexer()
         parser = Parser()
 
-        tree_ast: ast.BlockAST = ast.BlockAST()
+        tree_ast: astx.Block = astx.Block()
 
         for input_file in self.input_files:
             ArxIO.file_to_buffer(input_file)

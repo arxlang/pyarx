@@ -8,26 +8,11 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, cast
 
+from astx import SourceLocation
+
 from arx.io import ArxIO
 
 EOF = ""
-
-
-@dataclass
-class SourceLocation:
-    """
-    Represents the source location with line and column information.
-
-    Attributes
-    ----------
-    line : int
-        Line number.
-    col : int
-        Column number.
-    """
-
-    line: int = 0
-    col: int = 0
 
 
 class TokenKind(Enum):
@@ -43,6 +28,7 @@ class TokenKind(Enum):
     # data types
     identifier: int = -10
     float_literal: int = -11
+    int32_literal: int = -12
 
     # control flow
     kw_if: int = -20
@@ -91,6 +77,7 @@ MAP_KW_TOKEN_TO_NAME: Dict[TokenKind, str] = {
     TokenKind.identifier: "identifier",
     TokenKind.indent: "indent",
     TokenKind.float_literal: "float",
+    TokenKind.int32_literal: "int32",
     TokenKind.kw_if: "if",
     TokenKind.kw_then: "then",
     TokenKind.kw_else: "else",
@@ -149,7 +136,7 @@ class Token:
             return "(" + str(self.value) + ")"
         if self.kind == TokenKind.indent:
             return "(" + str(self.value) + ")"
-        elif self.kind == TokenKind.float_literal:
+        elif self.kind == TokenKind.int32_literal:
             return "(" + str(self.value) + ")"
         return ""
 
@@ -327,8 +314,8 @@ class Lexer:
                 self.last_char = self.advance()
 
             return Token(
-                kind=TokenKind.float_literal,
-                value=float(num_str),
+                kind=TokenKind.int32_literal,
+                value=int(num_str),
                 location=self.lex_loc,
             )
 
